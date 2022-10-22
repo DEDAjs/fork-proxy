@@ -245,7 +245,9 @@ class Proxy
             route.serve(request, response, finalHandler(request, response));
         }
         // Otherwise proxy the request to the route host.
-        else this.proxy(request, response, next, route);
+        else if (route.target) this.proxy(request, response, next, route);
+        // Otherwise the route is malformed.
+        else return response.status(500).send("Malformed route definition");
     }
 
     /**
