@@ -6,7 +6,7 @@
 
 const Utility   = require("./Utility.js");
 const Server    = require("./Server.js");
-const Route     = require("./Route.js");
+const Redirect = require("./Redirect.js");
 
 /**
  * This is the main class that loads the configurations, sub-components, and starts the HTTP server listeners.
@@ -113,7 +113,22 @@ class App
         const routes = Utility.flattenObject({routes: this.config.routes}, "routes");
 
         // Create the routes.
-        for (let config of routes) this.routes.push( new Route(this, config) );
+        for (let config of routes)
+        {
+            let route = null;
+
+            // Create the route based on the type.
+            if (config.redirect) route = new Redirect(this, config);
+            // If no route match found then throw exception.
+            //else throw new Error(`APP-CONFIG unknown route type. Must be redirect, serve, proxy, etc: ${JSON.stringify(config)}`);
+
+            // Add the route to the list of routes.
+            if (route)
+            {
+                route.load();
+                this.routes.push( route );
+            }
+        }
     }
 
     /**
@@ -171,7 +186,7 @@ class App
         // Traverse the route to find the first match.
         for (route of this.routes)
         {
-            match = route.match(url);
+            match = route.isMatch(url);
             if (match) return {match, route};
         }
 

@@ -87,10 +87,14 @@ Request and response headers can be access as well. Here is an example:
 
 ## Route
 
-* `match`: 
-* `log`: 
-* `rateLimit`:
-* `headers`: 
+This is the base class for all the routes that handle incoming requests. These are the 
+common properties that can be assigned to all routes.
+
+* `id`: A unique ID for this route. Used for debugging and references.
+* `desc`: A user description of the route. This is simply meta-data and not used.
+* `log`: The logger ID to use to log all requests. See above [#logger](Logger)
+* `rateLimit`: The rate-limiter ID to use for this route. See above [#RateLimiter](RateLimiter)
+* `match`: An object used for matching request URL. See [#Match](Match) for more details.
 
 ## Serve Static Files
 

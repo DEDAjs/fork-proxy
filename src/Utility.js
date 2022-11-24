@@ -305,6 +305,29 @@ class Utility
         // Return the list of flatten objects.
         return flatObjects;
     }
+
+    /**
+     * 
+     * @param {*} target 
+     * @param {*} source 
+     * @param {*} level 
+     * @returns 
+     */
+    static assign(target, source, level = 2)
+    {
+        // Traverse the source and push it's properties onto the target.
+        for (let name in source)
+        {
+            const targetValue = target[name];
+            const sourceValue = source[name];
+
+            // If it does not exist within the target then add it.
+            if (targetValue === undefined) target[name] = sourceValue;
+            // Otherwise if it does exist and it is an object then merge that object.
+            else if (targetValue && sourceValue && typeof(targetValue) === "object" && typeof(sourceValue) === "object" && level > 0) this.assign(targetValue, sourceValue, level-1);
+        }
+        return target;
+    }
 }
 
 // Export the class

@@ -4,12 +4,12 @@
  */
 "use strict";
 
-const Serve    = require("./Serve.js");
-const Redirect = require("./Redirect.js");
-
+const Utility = require("./Utility.js");
 
 /**
- * 
+ * This is the parent class of all proxy routes that handles the upstream or route processing of incoming requests.
+ * The route base class loads the configurations and handles matching incoming requests. Sub-class implementations
+ * will extend the `exec()` method to process the request accordingly.
  * 
  * @class
  * @memberof DEDA.Core.ProxyServer
@@ -26,29 +26,33 @@ class Route
     constructor(app, config)
     {
         /**
-         * A reference to the server used to fetch loggers, rate-limiters, etc.
+         * A reference to the server used to fetch loggers, rate-limiters, used the debug/error/log api etc.
          * @member {DEDA.Core.ProxyServer.App}
          */
         this.app = app;
 
         /**
-         * 
+         * A reference to the log handler for this route. If null then no logging is required for this route.
+         * The logger to used is defined within the configuration as {"log": "<id>"}
          * @member {DEDA.Core.ProxyServer.Logger}
          */
         this.log = null;
 
         /**
-         * 
+         * A reference to the rate-limiter for this route. If null then no rate limit is required for this route.
+         * The rate-limiter to used is defined within the configuration as {"rateLimit": "<id>"}
          * @member {DEDA.Core.ProxyServer.RateLimit}
          */
         this.rateLimit = null;
 
         /**
-         * The given options mixed in with the default options if not set.
+         * The configuration options for this route.
+         * The basic structure is: {"id": "<string>", "desc": "<string>", "log": "<id>", "rateLimit": "<id>", "match": { ... }, ... }
+         * 
          * @see getDefaultOptions for more details.
          * @member {DEDA.Core.ProxyServer.Config}
          */
-        this.config = this.load(config);
+        this.config = Utility.assign(this.constructor.getDefaultConfigs(), config);
     }
 
 
@@ -59,24 +63,27 @@ class Route
     static getDefaultConfigs()
     {
         return {
-            log: null,
-            rateLimit: null,
-            headers: null,
+            id: undefined,
+            desc: undefined,
+            log: undefined,
+            rateLimit: undefined,
+            headers: undefined,
             match: {},
         };
     }
 
     /**
      * Validates and loads the given server configurations. Returns the validated config.
+     * Sub-classes should extend this method and load/validate their own configuration.
      * 
-     * @param {DEDA.Core.ProxyServer.Server.Config} config - The configuration to validate and load.
-     * @returns {DEDA.Core.ProxyServer.Server.Config} - The validated configs.
+     * @param {DEDA.Core.ProxyServer.Route.Config} config - The configuration to validate and load.
+     * @returns {DEDA.Core.ProxyServer.Route.Config} - The validated configs.
      * @throws {Error} - Throws an exception if the configuration was invalid.
      */
-    load(config)
+    load()
     {
-        // Merge the given configs with the default configs to add any missing default values.
-        config = Object.assign(this.constructor.getDefaultConfigs(), config);
+        // Get a reference to the local configs to make the code cleaner.
+        const config = this.config;
 
         // If a log is specified then get it from the application.
         if (config.log)
@@ -109,30 +116,7 @@ class Route
             // If it is a string and a RegExp then convert it to a RegExp.
             if (typeof(value) === "string" && value.startsWith("//")) config.match[name] = new RegExp(value.substring("//".length));
         }
-
-        // Generate the appropriate route executor.
-        if (config.redirect) 
-        {
-            this.redirect = new Redirect(this.app, this, config.redirect);
-            this.exec = context=>this.redirect.exec(context);
-        }
-        else if (config.serve)
-        {
-            this.serve = new Serve(this.app, this, config.serve)
-            this.exec = context=>this.serve.exec(context);
-        }
-        else if (config.proxy)
-        {
-
-        }
-        // If no match then throw error.
-        else throw new Error(`ROUTE-CONFIG must have one 'redirect', 'serve', or 'proxy'.`);
-
-
-        // Return the loaded and validated configs.
-        return config;
     }
-
 
     /**
      * Checks if the given URL matches this routes match criteria.
@@ -140,17 +124,16 @@ class Route
      * @param {node:url} url - The URL object to match to.
      * @return {boolean | object} - Returns false if this route does not match the URL, otherwise returns an object with all the matched values.
      */
-    match(url)
+    isMatch(url)
     {
         const match = {};
-        const config = this.config;
 
         // Traverse the match and compare it to the URL information.
-        if (this.match) for (let name in config.match)
+        for (let name in this.config.match)
         {
             // Get the URL value and the match value for the current property.
             const urlValue   = url[name];
-            const matchValue = config.match[name];
+            const matchValue = this.config.match[name];
 
             // If the match is a regular-expression then execute it against the url value.
             if (matchValue instanceof RegExp)
@@ -173,13 +156,13 @@ class Route
     }
 
     /**
+     * Once this route is matched the `exec` function will be called to process the incoming request.
+     * This is a virtual function that all sub-classes must implement in-order to process the request
+     * accordingly.
      * 
-     * @param {*} context 
+     * @param {DEDA.Core.ProxyServer.Context} context - The request context containing all required object to process the request.
      */
-    exec(context)
-    {
-        context.response.end();
-    }
+    exec(context) { throw new Error(`ROUTE-EXEC method must be implemented by sub-classes`); }
 }
 
 // Export the class

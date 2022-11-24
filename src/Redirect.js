@@ -9,60 +9,46 @@ const { Code } = require("mongodb");
 
 const url = require("url");
 
-const Status = require("./Status.json");
+const Route   = require("./Route.js");
+const Status  = require("./Status.json");
 const Utility = require("./Utility.js");
 
 /**
- * 
+ * This is a route that redirects incoming requests to a different URL. Uses the HTTP header 'LOCATION' to redirect
+ * a request to a specified URL.
  * 
  * @class
  * @memberof DEDA.Core.ProxyServer
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class Redirect
+class Redirect extends Route
 {
-    /**
-     * Processes the given configurations. Check is the given root path exists.
-     * 
-     * @param {DEDA.Core.ProxyServer.App} app - 
-     * @param {DEDA.Core.ProxyServer.Route} route - 
-     * @param {DEDA.Core.ProxyServer.Redirect.Config} config - The configuration.
-     */
-    constructor(app, route, config)
-    {
-        this.config = this.load(config);
-    }
-
-    /*
-     * @property {string} url - The url to redirect to. Supports context references.
-     * @property {integer} [statusCode = 307] - The status code to use when serving this content.
-     * @property {string} [body = ""] - The body to send when redirecting "${statusMessage}. Redirecting to ${url}"
-     */
-
-
     /**
      * Returns all the possible options with their default values for this component.
      * @returns {DEDA.Core.ProxyServer.Redirect.Config} Returns the all the component options set to the default values.
      */
     static getDefaultConfigs()
     {
-        return {
-            url: null,
-            statusCode: 307,
-            statusMessage: null,
-            body: "${redirect.statusMessage}. Redirecting to ${redirect.url}"
-        };
+        return Object.assign(super.getDefaultConfigs(), {
+            redirect: {
+                url: undefined,
+                statusCode: 307,
+                statusMessage: undefined,
+                body: "${redirect.statusMessage}. Redirecting to ${redirect.url}"
+            }
+        });
     }
 
     /**
-     * 
-     * @param {DEDA.Core.ProxyServer.Redirect.Config} config - 
-     * @returns {DEDA.Core.ProxyServer.Redirect.Config}
+     * Extends the parent `load` method to validate and process it's own redirect configs.
      */
-    load(config)
+    load()
     {
-        // Merge the given configs with the default configs to add any missing default values.
-        config = Object.assign(this.constructor.getDefaultConfigs(), config);
+        // Call the super class to validate/process it's configs first.
+        super.load();
+
+        // Get the redirect configs to processing.
+        const config = this.config.redirect;
 
         // If the URL is not defined then throw exception.
         if (!config.url || typeof(config.url) !== "string") throw new Error("REDIRECT-CONFIG requires a valid string URL");
@@ -73,19 +59,18 @@ class Redirect
 
         // If no message is given then use default message.
         if (!config.statusMessage) config.statusMessage = Status[String(config.statusCode)];
-
-        // Return the validate config.
-        return config;
     }
 
     /**
+     * Executes the redirect route using the given request context.
+     * This method will evaluate the redirect URL based on the given context then respond to the request with an HTTP redirect.
      * 
-     * @param {DEDA.Core.ProxyServer.Context} context - 
+     * @param {DEDA.Core.ProxyServer.Context} context - The request context.
      */
     exec(context)
     {
         // Build the redirect object.
-        const redirect = context.redirect = Object.assign({address: null}, this.config);
+        const redirect = context.redirect = Object.assign({address: null}, this.config.redirect);
 
         // Compile the redirect URL and the body message.
         redirect.url = Utility.replaceRefs(redirect.url, context);
