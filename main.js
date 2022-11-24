@@ -3,8 +3,7 @@
  */
 "use strict";
 
-const App  = require("./src/App.js");
-const Cluster = require("./src/Cluster.js");
+const {App, Cluster} = require("./index.js");
 
 // Get the last parameter within the command line and use it to load the options.
 const configPath = process.argv[process.argv.length - 1];

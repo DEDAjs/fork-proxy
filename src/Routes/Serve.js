@@ -7,9 +7,10 @@
 const fs = require("fs");
 const path = require("path");
 
-const Mime = require("./Mime.json");
-const Status = require("./Status.json");
-const Utility = require("./Utility.js");
+const Route = require("../Route.js");
+
+const Mime = require("../Common/Mime.json");
+const Status = require("../Common/Status.json");
 
 /**
  * There are the list of supported features.
@@ -23,19 +24,17 @@ const Utility = require("./Utility.js");
  * @memberof DEDA.Core.ProxyServer
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class Serve
+class Serve extends Route
 {
+
     /**
-     * Processes the given configurations. Check is the given root path exists.
+     * Returns the name of the property that a config must have in-order to classify it as a static file server route.
+     * Used by the super class to register this route with the application. When the application loads the
+     * configuration this is used to identify route types.
      * 
-     * @param {DEDA.Core.ProxyServer.App} app - 
-     * @param {DEDA.Core.ProxyServer.Route} route - 
-     * @param {DEDA.Core.ProxyServer.Redirect.Config} config - The configuration.
+     * @returns {string} - The name of the config property that identifies this route.
      */
-    constructor(app, route, config)
-    {
-        this.config = this.load(config);
-    }
+    static get name() { return "serve"; }
 
     /**
      * Processes the given configurations. Check is the given root path exists.
@@ -53,26 +52,30 @@ class Serve
      */
     static getDefaultConfigs()
     {
-        return {
-            root: null,
-            dotFiles: "ignore",
-            statusCode: 200,
-            lastModified: true,
-            index: false,
-            cache: false
-        };
+        return Object.assign(super.getDefaultConfigs(), {
+            serve: {
+                root: null,
+                dotFiles: "ignore",
+                statusCode: 200,
+                lastModified: true,
+                index: false,
+                cache: false
+            }
+        });
     }
 
 
     /**
      * 
-     * @param {DEDA.Core.ProxyServer.Serve.Config} config - 
      * @returns {DEDA.Core.ProxyServer.Serve.Config}
      */
-    load(config)
+    load()
     {
-        // Merge the given configs with the default configs to add any missing default values.
-        config = Object.assign(this.constructor.getDefaultConfigs(), config);
+        // Call the super class to validate/process it's configs first.
+        super.load();
+
+        // Get the static file `serve` configs to processing.
+        const config = this.config.serve;
 
         // There must be a root.
         if (!config.root || typeof(config.root) !== "string") throw new Error(`SERVE-CONFIG - root must exist and be a valid string/path: ${config.root}`);
@@ -87,9 +90,6 @@ class Serve
         // Make sure the status code is a number.
         config.statusCode = Number.parseInt(config.statusCode);
         if (Number.isNaN(config.statusCode) || !Status.hasOwnProperty(String(config.statusCode))) throw new Error(`SERVE-CONFIG requires a valid integer status code: ${config.statusCode}`);
-
-        // Return the validate config.
-        return config;
     }
 
     /**
@@ -98,7 +98,7 @@ class Serve
      */
     exec(context)
     {
-        const config = this.config;
+        const config = this.config.serve;
 
         // If the route is a single file then send it regardless of what the path is.
         if (config.isFile) return this.sendFile(context, config.root);
@@ -291,7 +291,10 @@ class Serve
     }
 }
 
+// Register this implementation with the application.
+Serve.register();
+
 // Export the class
-Serve.namespace = "DEDA.Core.ProxyServer.Serve";
+Serve.namespace = "DEDA.Core.ProxyServer.Routes.Serve";
 module.exports = Serve;
 };

@@ -12,10 +12,12 @@
 
     "servers": [
         {
+            "type": "http",
             "port": 8080,
             "host": "0.0.0.0"
         },
         {
+            "type": "http",
             "port": 4443,
             "host": "0.0.0.0",
             "key" : "${env.cwd}/docs/www/ssl/private.key",

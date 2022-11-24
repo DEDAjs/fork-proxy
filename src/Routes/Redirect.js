@@ -1,6 +1,3 @@
-const { Stats } = require("fs");
-const { Code } = require("mongodb");
-
 {
 /**
  * Copyright Notice: This file is subject to the terms and conditions defined in file https://deda.ca/LICENSE-CODE.txt
@@ -9,9 +6,10 @@ const { Code } = require("mongodb");
 
 const url = require("url");
 
-const Route   = require("./Route.js");
-const Status  = require("./Status.json");
-const Utility = require("./Utility.js");
+const Route   = require("../Route.js");
+const Utility = require("../Utility.js");
+
+const Status  = require("../Common/Status.json");
 
 /**
  * This is a route that redirects incoming requests to a different URL. Uses the HTTP header 'LOCATION' to redirect
@@ -23,6 +21,15 @@ const Utility = require("./Utility.js");
  */
 class Redirect extends Route
 {
+    /**
+     * Returns the name of the property that a config must have in-order to classify it as a redirect route.
+     * Used by the super class to register this route with the application. When the application loads the
+     * configuration this is used to identify route types.
+     * 
+     * @returns {string} - The name of the config property that identifies this route.
+     */
+    static get name() { return "redirect"; }
+
     /**
      * Returns all the possible options with their default values for this component.
      * @returns {DEDA.Core.ProxyServer.Redirect.Config} Returns the all the component options set to the default values.
@@ -90,7 +97,10 @@ class Redirect extends Route
     }
 }
 
+// Register this implementation with the application.
+Redirect.register();
+
 // Export the class
-Redirect.namespace = "DEDA.Core.ProxyServer.Redirect";
+Redirect.namespace = "DEDA.Core.ProxyServer.Routes.Redirect";
 module.exports = Redirect;
 };

@@ -4,6 +4,7 @@
  */
 "use strict";
 
+const App     = require("./App.js");
 const Utility = require("./Utility.js");
 
 /**
@@ -55,6 +56,21 @@ class Route
         this.config = Utility.assign(this.constructor.getDefaultConfigs(), config);
     }
 
+    /**
+     * When a route is registered with the application the name is used to link a 
+     * configuration with a route when loading the config/application.
+     * 
+     * NOTE: sub-class must override this method to return their own unique route name identifier.
+     * 
+     * @returns {string} - The name of the config property that identifies this route.
+     */
+    static get name() { return "N/A"; }
+
+    /**
+     * Registers this route with the application. This allows the application to use this route based on
+     * the configuration property name.
+     */
+    static register() { App.registerRoute(this); }
 
     /**
      * Returns all the possible options with their default values for this component.
@@ -156,13 +172,13 @@ class Route
     }
 
     /**
-     * Once this route is matched the `exec` function will be called to process the incoming request.
+     * Once this route is matched the `route` function will be called to process the incoming request.
      * This is a virtual function that all sub-classes must implement in-order to process the request
      * accordingly.
      * 
      * @param {DEDA.Core.ProxyServer.Context} context - The request context containing all required object to process the request.
      */
-    exec(context) { throw new Error(`ROUTE-EXEC method must be implemented by sub-classes`); }
+    route(context) { throw new Error(`ROUTE-ROUTE method must be implemented by sub-classes`); }
 }
 
 // Export the class

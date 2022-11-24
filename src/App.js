@@ -5,11 +5,9 @@
 "use strict";
 
 const Utility   = require("./Utility.js");
-const Server    = require("./Server.js");
-const Redirect = require("./Redirect.js");
 
 /**
- * This is the main class that loads the configurations, sub-components, and starts the HTTP server listeners.
+ * This is the main class that loads the configurations, loggers, rate-limiters, servers, and routes/proxies.
  * 
  * @class
  * @memberof DEDA.Core.ProxyServer
@@ -105,9 +103,18 @@ class App
         // global catch all is enabled then listen to the process global catch exception.
         if (this.config.enableUncaughtException) process.on('uncaughtException', error=>Utility.error(`PROCESS-ERROR - the process has crashed`, error));
 
-
         // Create the servers.
-        for (let config of this.config.servers) this.servers.push( new Server(this, config) );
+        for (let config of this.config.servers)
+        {
+            // Find the registered server this this config.
+            const Server = this.constructor.findRegisteredServer(config);
+            if (!Server) throw new Error(`APP-CONFIG unable to find registered server for configuration: ${JSON.stringify(config)}`);
+
+            // Create the server, load it, start it, then add it to the list of servers.
+            const server = new Server(this, config);
+            server.load();
+            this.servers.push(server);
+        }
 
         // Flatten the routes configs.
         const routes = Utility.flattenObject({routes: this.config.routes}, "routes");
@@ -115,19 +122,13 @@ class App
         // Create the routes.
         for (let config of routes)
         {
-            let route = null;
+            const Route = this.constructor.findRegisteredRoute(config);
+            if (!Route) throw new Error(`APP-CONFIG unable to find registered route for configuration: ${JSON.stringify(config)}`);
 
-            // Create the route based on the type.
-            if (config.redirect) route = new Redirect(this, config);
-            // If no route match found then throw exception.
-            //else throw new Error(`APP-CONFIG unknown route type. Must be redirect, serve, proxy, etc: ${JSON.stringify(config)}`);
-
-            // Add the route to the list of routes.
-            if (route)
-            {
-                route.load();
-                this.routes.push( route );
-            }
+            // Create the route, load it's configuration, and push it to the list of routes.
+            const route = new Route(this, config)
+            route.load()
+            this.routes.push(route);
         }
     }
 
@@ -193,7 +194,71 @@ class App
         // If no match found then return null.
         return {route: null, match: null};
     }
+
+    /**
+     * Registers a route with the application. This allows the proxy server to extend the methods of 
+     * proxying or routing incoming requests. Routes can implement the `DEDA.Core.ProxyServer.Route`
+     * to perform their specific function with incoming requests.
+     * 
+     * @param {DEDA.Core.ProxyServer.Route} route -The route to register with the application.
+     */
+    static registerRoute(route)
+    {
+        // If the route already exists then throw exception.
+        if (this.Routes.hasOwnProperty(route.name)) throw new Error(`APP-REGISTER route with the same name already exists: ${route.name}`);
+
+        // Add the route to the application route registry.
+        this.Routes[route.name] = route;
+    }
+
+    /**
+     * @param {} config
+     */
+    static findRegisteredRoute(config)
+    {
+        for (let name in this.Routes) if (config.hasOwnProperty(name)) return this.Routes[name];
+        return null;
+    }
+
+    /**
+     * Registers a server implementation with the application. 
+     * Only registered servers can be created.
+     * @param {DEDA.Core.ProxyServer.Server} server -The server to register with the application.
+     */
+    static registerServer(server)
+    {
+        // If the route already exists then throw exception.
+        if (this.Servers.hasOwnProperty(server.name)) throw new Error(`APP-REGISTER server with the same name already exists: ${server.name}`);
+
+        // Add the route to the application route registry.
+        this.Servers[server.name] = server;
+    }
+
+    /**
+     * 
+     * @param {*} config 
+     */
+    static findRegisteredServer(config)
+    {
+        return this.Servers[config.type || "http"];
+    }
 }
+
+/**
+ * A static Route implementations map used to register routes with the application.
+ * Allows a plugin architecture of many different types of routes.
+ * @member {DEDA.Core.ProxyServer.Route} 
+ * @static
+ */
+App.Routes = {};
+
+/**
+ * A static Server implementations map used to register servers with the application.
+ * @member {DEDA.Core.ProxyServer.Server}
+ * @static
+ */
+App.Servers = {};
+
 
 // Export the class
 App.namespace = "DEDA.Core.ProxyServer.App";

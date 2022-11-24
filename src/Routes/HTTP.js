@@ -8,7 +8,8 @@ const URL = require("url");
 const http = require("http");
 const https = require("https");
 
-const Utility = require("./Utility.js");
+const Route = require("../Route.js");
+const Utility = require("../Utility.js");
 
 /**
  * An HTTP/HTTPS proxy that routes incoming HTTP requests to another upstream HTTP/HTTPS server.
@@ -25,7 +26,7 @@ const Utility = require("./Utility.js");
  * @memberof DEDA.Core.ProxyServer
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class Proxy
+class HTTP extends Route
 {
     /**
      * Creates a new proxy server with the given configurations. The constructor will
@@ -34,22 +35,11 @@ class Proxy
      * If the given configuration is invalid then an exception is thrown.
      * 
      * @param {DEDA.Core.ProxyServer.App} app - 
-     * @param {DEDA.Core.ProxyServer.Router} route - 
      * @param {DEDA.Core.ProxyServer.Proxy.Config} config - The configuration.
      */
-    constructor(app, route, config)
+    constructor(app, config)
     {
-        /**
-         * A reference to the top level application. Used for error and debug logging.
-         * @member {DEDA.Core.ProxyServer.App}
-         */
-        this.app = app;
-
-        /**
-         * A reference to the parent router that this route belongs to.
-         * @member {DEDA.Core.ProxyServer.Router}
-         */
-        this.router = router;
+        super(app, config);
 
         /**
          * Used by the methods `round-robin` to keep track of which server is next.
@@ -57,13 +47,16 @@ class Proxy
          * @member {integer}
          */
         this.nextIndex = 0;
-
-        /**
-         * 
-         * @member {DEDA.Core.ProxyServer.Proxy.Config}
-         */
-        this.config = this.load(config);
     }
+
+    /**
+     * Returns the name of the property that a config must have in-order to classify it as a redirect route.
+     * Used by the super class to register this route with the application. When the application loads the
+     * configuration this is used to identify route types.
+     * 
+     * @returns {string} - The name of the config property that identifies this route.
+     */
+    static get name() { return "proxy"; }
 
     /**
      * Returns all the possible options with their default values for this component.
@@ -72,9 +65,11 @@ class Proxy
     static getDefaultConfigs()
     {
         return {
-            method: "round-robin",
-            sticky: false,
-            upstream: null // {server: <string>, down: false, backup: false, currentConnections: <integer>, totalConnections: <integer>, averageTime: <float>}
+            proxy: {
+                method: "round-robin",
+                sticky: false,
+                upstream: null // {server: <string>, down: false, backup: false, currentConnections: <integer>, totalConnections: <integer>, averageTime: <float>}
+            }
         };
     }
 
@@ -90,10 +85,9 @@ class Proxy
      * @param {DEDA.Core.ProxyServer.Proxy.Config} config - 
      * @returns {DEDA.Core.ProxyServer.Proxy.Config}
      */
-    load(config)
+    load()
     {
-        // Merge the given configs with the default configs to add any missing default values.
-        config = Object.assign(this.constructor.getDefaultConfigs(), config);
+        const config = this.config.proxy;
 
         // If the URL is not defined then throw exception.
         if (!config.upstream) throw new Error("PROXY-CONFIG is missing upstream parameter");
@@ -104,7 +98,7 @@ class Proxy
         for (let index = 0; index < config.upstream.length; index++)
         {
             // Ge the next server. If it is a string then convert it to an object.
-            const upstream = config.upstream[index]; 
+            let upstream = config.upstream[index]; 
             if (typeof(upstream) === "string") upstream = {server: upstream};
 
             // Set the default options.
@@ -113,9 +107,6 @@ class Proxy
             // Validate the server URL.
             if (typeof(upstream.server) !== "string") throw new Error(`PROXY-CONFIG requires a valid upstream server URL: '${JSON.stringify(config)}'`);
         }
-
-        // Return back a processed config object.
-        return config;
     }
 
     /**
@@ -246,7 +237,10 @@ class Proxy
     }
 }
 
+// Register this implementation with the application.
+HTTP.register();
+
 // Export the class
-Proxy.namespace = "DEDA.Core.ProxyServer.Proxy";
-module.exports = Proxy;
+HTTP.namespace = "DEDA.Core.ProxyServer.Routes.HTTP";
+module.exports = HTTP;
 };

@@ -321,10 +321,10 @@ class Utility
             const targetValue = target[name];
             const sourceValue = source[name];
 
-            // If it does not exist within the target then add it.
-            if (targetValue === undefined) target[name] = sourceValue;
-            // Otherwise if it does exist and it is an object then merge that object.
-            else if (targetValue && sourceValue && typeof(targetValue) === "object" && typeof(sourceValue) === "object" && level > 0) this.assign(targetValue, sourceValue, level-1);
+            // If the target already has the property and it is an object then merge the inner objects.
+            if (targetValue && sourceValue && typeof(targetValue) === "object" && typeof(sourceValue) === "object" && level > 0) this.assign(targetValue, sourceValue, level-1);
+            // Otherwise the source overrides the target.
+            else target[name] = sourceValue;
         }
         return target;
     }
