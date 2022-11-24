@@ -1,0 +1,54 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "3.0.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Server",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "args": ["./docs/www/config.json"],
+            "program": "${workspaceFolder}/main.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Tools - Mime",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "args": ["--mime"],
+            "program": "${workspaceFolder}/src/Tools.js"
+        },
+        {
+            "name": "Run ALL Tests",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "stopOnEntry": false,
+
+            "args": ["${workspaceFolder}/test/all_test.js", "--no-timeouts"],
+
+            "cwd": "${workspaceRoot}",
+            "runtimeExecutable": null,
+            "env": { "NODE_ENV": "testing"}
+        },
+        {
+            "name": "Run test current file",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "stopOnEntry": false,
+
+            "args": ["${file}", "--no-timeouts"],
+
+            "cwd": "${workspaceRoot}",
+            "runtimeExecutable": null,
+            "env": { "NODE_ENV": "testing"}
+        }
+    ]
+}

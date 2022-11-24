@@ -1,0 +1,68 @@
+{
+    "env": {
+        "hostname": "dev02.deda.ca"
+    },
+
+    "cluster": {
+        "enabled": false,
+        "numberOfWorkers": 4,
+        "restartDelay": 1000,
+        "enableUncaughtException": true
+    },
+
+    "servers": [
+        {
+            "port": 8080,
+            "host": "0.0.0.0"
+        },
+        {
+            "port": 4443,
+            "host": "0.0.0.0",
+            "key" : "${env.cwd}/docs/www/ssl/private.key",
+            "cert": "${env.cwd}/docs/www/ssl/cert.crt",
+            "encrypted": true,
+            "watch": true
+        }
+    ],
+
+    "routes": [
+        {
+            "match": {"hostname": "${env.hostname}"},
+
+            "routes": [
+                {
+                    "match": { "protocol": "http:" },
+                    "redirect": {
+                        "url": "https://${url.hostname}:4443${url.pathname}${url.search}",
+                        "statusCode": 307
+                    }
+                },
+                {
+                    "description": "The main Website",
+                    "serve": {
+                        "root": "${env.cwd}/docs/www/html/"
+                    }
+                },
+                {
+                    "description": "Proxy to justwash.ca",
+                    "match": { "pathname": "//^/app/justwash/"},
+                    "headers": { "x-forwarded-for": "${request.socket.remoteAddress}" },
+                    "proxy": {
+                        "method": "round-robin",
+                        "upstream": [
+                            {"server": "https://justwash.ca/", "down": false},
+                            {"server": "https://deda.ca/"    , "down": false}
+                        ]
+                    }
+                },
+                {
+                    "description": "Final Catch all and return 404 error",
+                    "serve": {
+                        "root": "${env.cwd}/docs/www/html/404.html",
+                        "statusCode": 400
+                    }
+                }
+            ]
+        }
+    ]
+}
