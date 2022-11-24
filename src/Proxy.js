@@ -4,8 +4,7 @@
  */
 "use strict";
 
-const App     = require("./App.js");
-const Utility = require("./Utility.js");
+const Component = require("./Component.js");
 
 /**
  * This is the parent class of all proxy routes that handles the upstream or route processing of incoming requests.
@@ -16,7 +15,7 @@ const Utility = require("./Utility.js");
  * @memberof DEDA.ProxyServer
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class Proxy
+class Proxy extends Component
 {
     /**
      * Creates a new route with the given configuration.
@@ -26,11 +25,8 @@ class Proxy
      */
     constructor(app, config)
     {
-        /**
-         * A reference to the server used to fetch loggers, rate-limiters, used the debug/error/log api etc.
-         * @member {DEDA.ProxyServer.App}
-         */
-        this.app = app;
+        // Call the super constructor.
+        super(app, config);
 
         /**
          * A reference to the log handler for this route. If null then no logging is required for this route.
@@ -47,30 +43,11 @@ class Proxy
         this.rateLimit = null;
 
         /**
-         * The configuration options for this route.
-         * The basic structure is: {"id": "<string>", "type": "<string>", "desc": "<string>", "log": "<id>", "rateLimit": "<id>", "match": { ... }, ... }
          * 
-         * @see getDefaultOptions for more details.
-         * @member {DEDA.ProxyServer.Config}
+         * @member {DEDA.Proxy.Balancer}
          */
-        this.config = Utility.assign(this.constructor.getDefaultConfigs(), config);
+        this.balancer = null;
     }
-
-    /**
-     * When a route is registered with the application the name is used to link a 
-     * configuration with a route when loading the config/application.
-     * 
-     * NOTE: sub-class must override this method to return their own unique route name identifier.
-     * 
-     * @returns {string} - The name of the config property that identifies this route.
-     */
-    static get name() { return "N/A"; }
-
-    /**
-     * Registers this route with the application. This allows the application to use this route based on
-     * the configuration property name.
-     */
-    static register() { App.register("proxy", this); }
 
     /**
      * Returns all the possible options with their default values for this component.

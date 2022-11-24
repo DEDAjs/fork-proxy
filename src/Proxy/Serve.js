@@ -34,7 +34,7 @@ class Serve extends Proxy
      * 
      * @returns {string} - The name of the config property that identifies this route.
      */
-    static get name() { return "serve"; }
+    static get type() { return "proxy-serve"; }
 
     /**
      * Processes the given configurations. Check is the given root path exists.
@@ -287,10 +287,8 @@ class Serve extends Proxy
     }
 }
 
-// Register this implementation with the application.
-Serve.register();
-
-// Export the class
+// Register this implementation with the application. Export the class
 Serve.namespace = "DEDA.ProxyServer.Proxy.Serve";
+Serve.register();
 module.exports = Serve;
 };

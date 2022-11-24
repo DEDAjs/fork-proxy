@@ -27,10 +27,14 @@ module.exports = {
         Serve   : require("./src/Proxy/Serve.js"),
         Redirect: require("./src/Proxy/Redirect.js"),
 
-        HTTP    : require("./src/Proxy/HTTP.js")
+        HTTP    : require("./src/Proxy/HTTP.js"),
         // TCP     : require("./src/Proxy/TCP.js"),   // Future implementation
         // UDP     : require("./src/Proxy/UDP.js"),   // Future implementation
         // SMTP    : require("./src/Proxy/SMTP.js")   // Future implementation
+
+        Balancer: {
+            RoundRobin: require("./src/Proxy/Balancer/RoundRobin.js")
+        }
     },
 
     namespace: "DEDA.ProxyServer"

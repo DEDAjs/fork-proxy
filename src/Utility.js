@@ -6,6 +6,8 @@
 
 const url = require("url");
 
+const Status = require("./Common/Status.json");
+
 /**
  * RegExp to match non-URL code points, *after* encoding (i.e. not including "%") and including invalid escape sequences.
  * @private
@@ -327,6 +329,30 @@ class Utility
             else target[name] = sourceValue;
         }
         return target;
+    }
+
+    /**
+     * Emit error with `status`.
+     *
+     * @param {DEDA.ProxyServer.Context} context -
+     * @param {number} status
+     * @private
+     */
+    static httpError(response, statusCode)
+    {
+        statusCode = String(statusCode);
+
+        const statusMessage = Status[statusCode];
+        const body = statusCode + ' - ' + statusMessage;
+
+        // send basic response
+        response.statusCode = statusCode;
+        response.statusMessage = statusMessage;
+        response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        response.setHeader('Content-Length', Buffer.byteLength(body));
+        response.setHeader('Content-Security-Policy', "default-src 'none'");
+        response.setHeader('X-Content-Type-Options', 'nosniff');
+        response.end(body);
     }
 }
 

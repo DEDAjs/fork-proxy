@@ -12,12 +12,12 @@
 
     "servers": [
         {
-            "type": "http",
+            "type": "server-http",
             "port": 8080,
             "host": "0.0.0.0"
         },
         {
-            "type": "http",
+            "type": "server-http",
             "port": 4443,
             "host": "0.0.0.0",
             "key" : "${env.cwd}/docs/www/ssl/private.key",
@@ -33,33 +33,37 @@
 
             "routes": [
                 {
-                    "type": "redirect",
+                    "type": "proxy-redirect",
                     "match": { "protocol": "http:" },
 
                     "url": "https://${url.hostname}:4443${url.pathname}${url.search}",
                     "statusCode": 307
                 },
                 {
-                    "type": "serve",
+                    "type": "proxy-http",
+                    "desc": "Proxy to justwash.ca",
+
+                    "match": { "pathname": "//^/app/deda/"},
+                    "headers": { "x-forwarded-for": "${request.socket.remoteAddress}" },
+                    
+                    "balancer": {
+                        "type": "balancer-round-robin"
+                    },
+
+                    "upstream": [
+                        {"server": "https://lcchomes.com/", "down": false},
+                        {"server": "https://deda.ca/"     , "down": false},
+                        {"server": "https://test.deda.ca/"     , "down": false}
+                    ]
+                },
+                {
+                    "type": "proxy-serve",
                     "desc": "The main Website",
 
                     "root": "${env.cwd}/docs/www/html/"
                 },
                 {
-                    "type": "http-proxy",
-                    "desc": "Proxy to justwash.ca",
-
-                    "match": { "pathname": "//^/app/justwash/"},
-                    "headers": { "x-forwarded-for": "${request.socket.remoteAddress}" },
-                    
-                    "balancer": "round-robin",
-                    "upstream": [
-                        {"server": "https://justwash.ca/", "down": false},
-                        {"server": "https://deda.ca/"    , "down": false}
-                    ]
-                },
-                {
-                    "type": "serve",
+                    "type": "proxy-serve",
                     "desc": "Final Catch all and return 404 error",
 
                     "root": "${env.cwd}/docs/www/html/404.html",

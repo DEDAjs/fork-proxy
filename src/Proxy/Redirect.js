@@ -30,7 +30,7 @@ class Redirect extends Proxy
      * 
      * @returns {string} - The name of the config property that identifies this route.
      */
-    static get name() { return "redirect"; }
+    static get type() { return "proxy-redirect"; }
 
     /**
      * Returns all the possible options with their default values for this component.
@@ -101,10 +101,9 @@ class Redirect extends Proxy
     }
 }
 
-// Register this implementation with the application.
-Redirect.register();
 
-// Export the class
+// Register this implementation with the application. Export the class
 Redirect.namespace = "DEDA.ProxyServer.Proxy.Redirect";
+Redirect.register();
 module.exports = Redirect;
 };

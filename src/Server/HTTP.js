@@ -59,11 +59,10 @@ class HTTP extends Server
 
 
     /**
-     * The unique name of this server. The server configuration must contain this property to 
-     * mark it as an HTTP server listener.
-     * @returns {string} - The name of the config property that identifies this server.
+     * The unique type of this component used by the application configuration loader.
+     * @returns {string} - The name/type of the config `type` value that identifies this component.
      */
-    static get name() { return "http"; }
+    static get type() { return "server-http"; }
 
     /**
      * Returns all the possible options with their default values for this component.
@@ -150,10 +149,8 @@ class HTTP extends Server
     }
 }
 
-// Register this implementation with the application.
-HTTP.register();
-
-// Export the class
+// Register this implementation with the application. Export the class
 HTTP.namespace = "DEDA.ProxyServer.Server.HTTP";
+HTTP.register();
 module.exports = HTTP;
 };

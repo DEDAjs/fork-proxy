@@ -4,7 +4,8 @@
  */
 "use strict";
 
-const Utility   = require("./Utility.js");
+const Utility = require("./Utility.js");
+const Component = require("./Component.js");
 
 /**
  * This is the main class that loads the configurations, loggers, rate-limiters, servers, and routes/proxies.
@@ -107,8 +108,7 @@ class App
         for (let config of this.config.servers)
         {
             // Find the registered server this this config.
-            const Server = this.constructor.findRegistered("server", config.type);
-            if (!Server) throw new Error(`APP-CONFIG unable to find registered server for configuration: ${JSON.stringify(config)}`);
+            const Server = Component.findRegistered(config.type);
 
             // Create the server, load it, start it, then add it to the list of servers.
             const server = new Server(this, config);
@@ -122,8 +122,7 @@ class App
         // Create the routes.
         for (let config of routes)
         {
-            const Route = this.constructor.findRegistered("proxy", config.type);
-            if (!Route) throw new Error(`APP-CONFIG unable to find registered route/proxy for configuration: ${JSON.stringify(config)}`);
+            const Route = Component.findRegistered(config.type);
 
             // Create the route, load it's configuration, and push it to the list of routes.
             const route = new Route(this, config)
@@ -194,45 +193,7 @@ class App
         // If no match found then return null.
         return {route: null, match: null};
     }
-
-
-    /**
-     * Registers a component with the application that can be auto-created by referencing it's type-name from the config file.
-     * This allows the application components to be easily extended to different proxies, routes, servers, load-balancers, etc.
-     * 
-     * @param {string} type - The type of component to register.
-     * @param {DEDA.ProxyServer.Component} Component -The component class to register with the application.
-     */
-    static register(type, Component)
-    {
-        // Create the <type>-<component name> key/ID.
-        const typeName = `${type}-${Component.name}`;
-
-        // If the component already exists then throw exception.
-        if (this.Components.hasOwnProperty(typeName)) throw new Error(`APP-REGISTER component with the same name already exists: ${typeName}`);
-
-        // Add the route to the application route registry.
-        this.Components[typeName] = Component;
-    }
-
-    /**
-     * Finds the component class with the given type and name.
-     * @param {string} type - The component type.
-     * @param {string} name - The component name.
-     * @param {DEDA.ProxyServer.Component} - Returns the matched component or null if none found.
-     */
-    static findRegistered(type, name) { return this.Components[`${type}-${name}`]; }
 }
-
-/**
- * A static components registry used by component implementations to map based on the component type.
- * Allows a plugin architecture of many different types and components. Make it easier to load configurations.
- * 
- * @member {DEDA.ProxyServer.Component} 
- * @static
- */
-App.Components = {};
-
 
 // Export the class
 App.namespace = "DEDA.ProxyServer.App";
