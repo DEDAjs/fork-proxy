@@ -13,7 +13,7 @@ const Utility = require("./Utility.js");
  * 
  * 
  * @class
- * @memberof DEDA.Core.ProxyServer
+ * @memberof DEDA.ProxyServer
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
 class Cluster
@@ -108,6 +108,6 @@ class Cluster
 }
 
 // Export the class
-Cluster.namespace = "DEDA.Core.ProxyServer.Cluster";
+Cluster.namespace = "DEDA.ProxyServer.Cluster";
 module.exports = Cluster;
 };

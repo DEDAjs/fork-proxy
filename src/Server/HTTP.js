@@ -18,15 +18,15 @@ const Utility = require("../Utility.js");
  * or proxies UDP, or TCP requests to other servers.
  * 
  * @class
- * @memberof DEDA.Core.ProxyServer
+ * @memberof DEDA.ProxyServer.Server
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
 class HTTP extends Server 
 {
     /**
      * Initializes the server and loads the given configurations.
-     * @param {DEDA.Core.ProxyServer.App} app - A reference to the application.
-     * @param {DEDA.Core.ProxyServer.Server.Config} config - The configuration to use.
+     * @param {DEDA.ProxyServer.App} app - A reference to the application.
+     * @param {DEDA.ProxyServer.Server.Config} config - The configuration to use.
      */
     constructor(app, config)
     {
@@ -67,7 +67,7 @@ class HTTP extends Server
 
     /**
      * Returns all the possible options with their default values for this component.
-     * @returns {DEDA.Core.ProxyServer.Server.Config} Returns the all the component options set to the default values.
+     * @returns {DEDA.ProxyServer.Server.Config} Returns the all the component options set to the default values.
      */
     static getDefaultConfigs()
     {
@@ -85,8 +85,8 @@ class HTTP extends Server
     /**
      * Validates and loads the given server configurations. Returns the validated config.
      * 
-     * @param {DEDA.Core.ProxyServer.Server.Config} config - The configuration to validate and load.
-     * @returns {DEDA.Core.ProxyServer.Server.Config} - The validated configs.
+     * @param {DEDA.ProxyServer.Server.Config} config - The configuration to validate and load.
+     * @returns {DEDA.ProxyServer.Server.Config} - The validated configs.
      * @throws {Error} - Throws an exception if the configuration was invalid.
      */
     load()
@@ -154,6 +154,6 @@ class HTTP extends Server
 HTTP.register();
 
 // Export the class
-HTTP.namespace = "DEDA.Core.ProxyServer.Servers.HTTP";
+HTTP.namespace = "DEDA.ProxyServer.Server.HTTP";
 module.exports = HTTP;
 };

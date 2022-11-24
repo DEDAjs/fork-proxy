@@ -13,25 +13,25 @@ module.exports = {
     // Logger      : require("./src/Logger.js"),
     // RateLimit   : require("./src/RateLimit.js"),
 
-    Route       : require("./src/Route.js"),
+    Proxy       : require("./src/Proxy.js"),
     Server      : require("./src/Server.js"),
 
-    Servers: {
-        HTTP: require("./src/Servers/HTTP.js")
-        // TCP : require("./src/Servers/TCP.js"),   // Future implementation
-        // UDP : require("./src/Servers/UDP.js"),   // Future implementation
-        // SMTP: require("./src/Servers/SMTP")      // Future implementation
+    Server: {
+        HTTP: require("./src/Server/HTTP.js")
+        // TCP : require("./src/Server/TCP.js"),   // Future implementation
+        // UDP : require("./src/Server/UDP.js"),   // Future implementation
+        // SMTP: require("./src/Server/SMTP")      // Future implementation
     },
 
-    Routes: {
-        Serve   : require("./src/Routes/Serve.js"),
-        Redirect: require("./src/Routes/Redirect.js"),
+    Proxy: {
+        Serve   : require("./src/Proxy/Serve.js"),
+        Redirect: require("./src/Proxy/Redirect.js"),
 
-        HTTP    : require("./src/Routes/HTTP.js")
-        // TCP     : require("./src/Proxies/TCP.js"),   // Future implementation
-        // UDP     : require("./src/Proxies/UDP.js"),   // Future implementation
-        // SMTP    : require("./src/Proxies/SMTP.js")   // Future implementation
+        HTTP    : require("./src/Proxy/HTTP.js")
+        // TCP     : require("./src/Proxy/TCP.js"),   // Future implementation
+        // UDP     : require("./src/Proxy/UDP.js"),   // Future implementation
+        // SMTP    : require("./src/Proxy/SMTP.js")   // Future implementation
     },
 
-    namespace: "DEDA.Core.ProxyServer"
+    namespace: "DEDA.ProxyServer"
 };

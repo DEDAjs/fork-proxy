@@ -29,7 +29,7 @@ const UNMATCHED_SURROGATE_PAIR_REPLACE = '$1\uFFFD$2'
  * The utility class provides common/general functions used within the application.
  * 
  * @class
- * @memberof DEDA.Core.ProxyServer
+ * @memberof DEDA.ProxyServer
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
 class Utility
@@ -331,6 +331,6 @@ class Utility
 }
 
 // Export the class
-Utility.namespace = "DEDA.Core.ProxyServer.Utility";
+Utility.namespace = "DEDA.ProxyServer.Utility";
 module.exports = Utility;
 };

@@ -7,7 +7,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const Route = require("../Route.js");
+const Proxy = require("../Proxy.js");
 
 const Mime = require("../Common/Mime.json");
 const Status = require("../Common/Status.json");
@@ -21,10 +21,10 @@ const Status = require("../Common/Status.json");
  *  
  * 
  * @class
- * @memberof DEDA.Core.ProxyServer
+ * @memberof DEDA.ProxyServer.Proxy
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class Serve extends Route
+class Serve extends Proxy
 {
 
     /**
@@ -48,34 +48,30 @@ class Serve extends Route
 
     /**
      * Returns all the possible options with their default values for this component.
-     * @returns {DEDA.Core.ProxyServer.Serve.Config} Returns the all the component options set to the default values.
+     * @returns {DEDA.ProxyServer.Serve.Config} Returns the all the component options set to the default values.
      */
     static getDefaultConfigs()
     {
         return Object.assign(super.getDefaultConfigs(), {
-            serve: {
-                root: null,
-                dotFiles: "ignore",
-                statusCode: 200,
-                lastModified: true,
-                index: false,
-                cache: false
-            }
+            root: null,
+            dotFiles: "ignore",
+            statusCode: 200,
+            lastModified: true,
+            index: false,
+            cache: false
         });
     }
 
 
     /**
      * 
-     * @returns {DEDA.Core.ProxyServer.Serve.Config}
+     * @returns {DEDA.ProxyServer.Serve.Config}
      */
     load()
     {
-        // Call the super class to validate/process it's configs first.
+        // Call the super class to validate/process it's configs first. Get the static file `serve` configs to processing.
         super.load();
-
-        // Get the static file `serve` configs to processing.
-        const config = this.config.serve;
+        const config = this.config;
 
         // There must be a root.
         if (!config.root || typeof(config.root) !== "string") throw new Error(`SERVE-CONFIG - root must exist and be a valid string/path: ${config.root}`);
@@ -94,11 +90,11 @@ class Serve extends Route
 
     /**
      * 
-     * @param {DEDA.Core.ProxyServer.Context}
+     * @param {DEDA.ProxyServer.Context}
      */
-    exec(context)
+    proxy(context)
     {
-        const config = this.config.serve;
+        const config = this.config;
 
         // If the route is a single file then send it regardless of what the path is.
         if (config.isFile) return this.sendFile(context, config.root);
@@ -128,7 +124,7 @@ class Serve extends Route
 
     /**
      * 
-     * @param {DEDA.Core.ProxyServer.Context} context - 
+     * @param {DEDA.ProxyServer.Context} context - 
      * @param {String} fullPath - 
      */
     sendFile(context, fullPath)
@@ -163,7 +159,7 @@ class Serve extends Route
      * NOTE: We assume that the given path exists and is a directory.
      * NOTE: We only support a single index file definition as of this version.
      * 
-     * @param {DEDA.Core.ProxyServer.Context} context -
+     * @param {DEDA.ProxyServer.Context} context -
      * @param {string} fullPath -
      */
     sendIndex(context, fullPath)
@@ -206,7 +202,7 @@ class Serve extends Route
 
     /**
      * 
-     * @param {DEDA.Core.ProxyServer.Context} context -
+     * @param {DEDA.ProxyServer.Context} context -
      * @param {string} fullPath - 
      * @param {fs.stats} stat -
      */
@@ -226,7 +222,7 @@ class Serve extends Route
     /**
      * Emit error with `status`.
      *
-     * @param {DEDA.Core.ProxyServer.Context} context -
+     * @param {DEDA.ProxyServer.Context} context -
      * @param {number} status
      * @private
      */
@@ -295,6 +291,6 @@ class Serve extends Route
 Serve.register();
 
 // Export the class
-Serve.namespace = "DEDA.Core.ProxyServer.Routes.Serve";
+Serve.namespace = "DEDA.ProxyServer.Proxy.Serve";
 module.exports = Serve;
 };

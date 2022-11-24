@@ -1,3 +1,5 @@
+const { config } = require("process");
+
 {
 /**
  * Copyright Notice: This file is subject to the terms and conditions defined in file https://deda.ca/LICENSE-CODE.txt
@@ -6,20 +8,20 @@
 
 const url = require("url");
 
-const Route   = require("../Route.js");
+const Proxy   = require("../Proxy.js");
 const Utility = require("../Utility.js");
 
 const Status  = require("../Common/Status.json");
 
 /**
- * This is a route that redirects incoming requests to a different URL. Uses the HTTP header 'LOCATION' to redirect
+ * This is a proxy/route that redirects incoming requests to a different URL. Uses the HTTP header 'LOCATION' to redirect
  * a request to a specified URL.
  * 
  * @class
- * @memberof DEDA.Core.ProxyServer
+ * @memberof DEDA.ProxyServer.Proxy
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class Redirect extends Route
+class Redirect extends Proxy
 {
     /**
      * Returns the name of the property that a config must have in-order to classify it as a redirect route.
@@ -32,17 +34,15 @@ class Redirect extends Route
 
     /**
      * Returns all the possible options with their default values for this component.
-     * @returns {DEDA.Core.ProxyServer.Redirect.Config} Returns the all the component options set to the default values.
+     * @returns {DEDA.ProxyServer.Redirect.Config} Returns the all the component options set to the default values.
      */
     static getDefaultConfigs()
     {
         return Object.assign(super.getDefaultConfigs(), {
-            redirect: {
-                url: undefined,
-                statusCode: 307,
-                statusMessage: undefined,
-                body: "${redirect.statusMessage}. Redirecting to ${redirect.url}"
-            }
+            url: undefined,
+            statusCode: 307,
+            statusMessage: undefined,
+            body: "${redirect.statusMessage}. Redirecting to ${redirect.url}"
         });
     }
 
@@ -51,11 +51,9 @@ class Redirect extends Route
      */
     load()
     {
-        // Call the super class to validate/process it's configs first.
+        // Call the super class to validate/process it's configs first. Get the redirect configs to processing.
         super.load();
-
-        // Get the redirect configs to processing.
-        const config = this.config.redirect;
+        const config = this.config;
 
         // If the URL is not defined then throw exception.
         if (!config.url || typeof(config.url) !== "string") throw new Error("REDIRECT-CONFIG requires a valid string URL");
@@ -72,12 +70,18 @@ class Redirect extends Route
      * Executes the redirect route using the given request context.
      * This method will evaluate the redirect URL based on the given context then respond to the request with an HTTP redirect.
      * 
-     * @param {DEDA.Core.ProxyServer.Context} context - The request context.
+     * @param {DEDA.ProxyServer.Context} context - The request context.
      */
-    exec(context)
+    proxy(context)
     {
         // Build the redirect object.
-        const redirect = context.redirect = Object.assign({address: null}, this.config.redirect);
+        const redirect = context.redirect = {
+            url           : this.config.url,
+            body          : this.config.body,
+            address       : null,
+            statusCode    : this.config.statusCode,
+            statusMessage : this.config.statusMessage
+        };
 
         // Compile the redirect URL and the body message.
         redirect.url = Utility.replaceRefs(redirect.url, context);
@@ -101,6 +105,6 @@ class Redirect extends Route
 Redirect.register();
 
 // Export the class
-Redirect.namespace = "DEDA.Core.ProxyServer.Routes.Redirect";
+Redirect.namespace = "DEDA.ProxyServer.Proxy.Redirect";
 module.exports = Redirect;
 };

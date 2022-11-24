@@ -12,28 +12,28 @@ const Utility = require("./Utility.js");
  * or proxies UDP, or TCP requests to other servers.
  * 
  * @class
- * @memberof DEDA.Core.ProxyServer
+ * @memberof DEDA.ProxyServer
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
 class Server
 {
     /**
      * Initializes the server and loads the given configurations.
-     * @param {DEDA.Core.ProxyServer.App} app - A reference to the application.
-     * @param {DEDA.Core.ProxyServer.Server.Config} config - The configuration to use.
+     * @param {DEDA.ProxyServer.App} app - A reference to the application.
+     * @param {DEDA.ProxyServer.Server.Config} config - The configuration to use.
      */
     constructor(app, config)
     {
         /**
          * A reference to the main application class used to fetch loggers, rate-limiters, etc.
-         * @member {DEDA.Core.ProxyServer.App}
+         * @member {DEDA.ProxyServer.App}
          */
         this.app = app;
 
         /**
          * The given options mixed in with the default options if not set.
          * @see getDefaultOptions for more details.
-         * @member {DEDA.Core.ProxyServer.Config}
+         * @member {DEDA.ProxyServer.Config}
          */
         this.config = Utility.assign(this.constructor.getDefaultConfigs(), config);
     }
@@ -52,11 +52,11 @@ class Server
      * Registers this server with the application. This allows the application to use this route based on
      * the configuration property name.
      */
-    static register() { App.registerServer(this); }
+    static register() { App.register("server", this); }
 
     /**
      * Returns all the possible options with their default values for this component.
-     * @returns {DEDA.Core.ProxyServer.Server.Config} Returns the all the component options set to the default values.
+     * @returns {DEDA.ProxyServer.Server.Config} Returns the all the component options set to the default values.
      */
     static getDefaultConfigs()
     {
@@ -67,8 +67,8 @@ class Server
     /**
      * Validates and loads the given server configurations. Returns the validated config.
      * 
-     * @param {DEDA.Core.ProxyServer.Server.Config} config - The configuration to validate and load.
-     * @returns {DEDA.Core.ProxyServer.Server.Config} - The validated configs.
+     * @param {DEDA.ProxyServer.Server.Config} config - The configuration to validate and load.
+     * @returns {DEDA.ProxyServer.Server.Config} - The validated configs.
      * @throws {Error} - Throws an exception if the configuration was invalid.
      */
     load()
@@ -84,6 +84,6 @@ class Server
 }
 
 // Export the class
-Server.namespace = "DEDA.Core.ProxyServer.Server";
+Server.namespace = "DEDA.ProxyServer.Server";
 module.exports = Server;
 };

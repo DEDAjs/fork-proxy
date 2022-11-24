@@ -33,36 +33,37 @@
 
             "routes": [
                 {
+                    "type": "redirect",
                     "match": { "protocol": "http:" },
-                    "redirect": {
-                        "url": "https://${url.hostname}:4443${url.pathname}${url.search}",
-                        "statusCode": 307
-                    }
+
+                    "url": "https://${url.hostname}:4443${url.pathname}${url.search}",
+                    "statusCode": 307
                 },
                 {
-                    "description": "The main Website",
-                    "serve": {
-                        "root": "${env.cwd}/docs/www/html/"
-                    }
+                    "type": "serve",
+                    "desc": "The main Website",
+
+                    "root": "${env.cwd}/docs/www/html/"
                 },
                 {
-                    "description": "Proxy to justwash.ca",
+                    "type": "http-proxy",
+                    "desc": "Proxy to justwash.ca",
+
                     "match": { "pathname": "//^/app/justwash/"},
                     "headers": { "x-forwarded-for": "${request.socket.remoteAddress}" },
-                    "proxy": {
-                        "method": "round-robin",
-                        "upstream": [
-                            {"server": "https://justwash.ca/", "down": false},
-                            {"server": "https://deda.ca/"    , "down": false}
-                        ]
-                    }
+                    
+                    "balancer": "round-robin",
+                    "upstream": [
+                        {"server": "https://justwash.ca/", "down": false},
+                        {"server": "https://deda.ca/"    , "down": false}
+                    ]
                 },
                 {
-                    "description": "Final Catch all and return 404 error",
-                    "serve": {
-                        "root": "${env.cwd}/docs/www/html/404.html",
-                        "statusCode": 400
-                    }
+                    "type": "serve",
+                    "desc": "Final Catch all and return 404 error",
+
+                    "root": "${env.cwd}/docs/www/html/404.html",
+                    "statusCode": 400
                 }
             ]
         }

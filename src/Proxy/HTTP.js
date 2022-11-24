@@ -8,7 +8,7 @@ const URL = require("url");
 const http = require("http");
 const https = require("https");
 
-const Route = require("../Route.js");
+const Proxy = require("../Proxy.js");
 const Utility = require("../Utility.js");
 
 /**
@@ -23,10 +23,10 @@ const Utility = require("../Utility.js");
  * - HTTP requests will be passed an active/validated connection from the load balancer after verifying upstream server is alive.
  * 
  * @class
- * @memberof DEDA.Core.ProxyServer
+ * @memberof DEDA.ProxyServer.Proxy
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class HTTP extends Route
+class HTTP extends Proxy
 {
     /**
      * Creates a new proxy server with the given configurations. The constructor will
@@ -34,8 +34,8 @@ class HTTP extends Route
      * 
      * If the given configuration is invalid then an exception is thrown.
      * 
-     * @param {DEDA.Core.ProxyServer.App} app - 
-     * @param {DEDA.Core.ProxyServer.Proxy.Config} config - The configuration.
+     * @param {DEDA.ProxyServer.App} app - 
+     * @param {DEDA.ProxyServer.Proxy.Config} config - The configuration.
      */
     constructor(app, config)
     {
@@ -56,21 +56,19 @@ class HTTP extends Route
      * 
      * @returns {string} - The name of the config property that identifies this route.
      */
-    static get name() { return "proxy"; }
+    static get name() { return "http-proxy"; }
 
     /**
      * Returns all the possible options with their default values for this component.
-     * @returns {DEDA.Core.ProxyServer.Proxy.Config} Returns the all the component options set to the default values.
+     * @returns {DEDA.ProxyServer.Proxy.Config} Returns the all the component options set to the default values.
      */
     static getDefaultConfigs()
     {
-        return {
-            proxy: {
-                method: "round-robin",
-                sticky: false,
-                upstream: null // {server: <string>, down: false, backup: false, currentConnections: <integer>, totalConnections: <integer>, averageTime: <float>}
-            }
-        };
+        return Object.assign(super.getDefaultConfigs(), {
+            method: "round-robin",
+            sticky: false,
+            upstream: null // {server: <string>, down: false, backup: false, currentConnections: <integer>, totalConnections: <integer>, averageTime: <float>}
+        });
     }
 
     /**
@@ -82,12 +80,13 @@ class HTTP extends Route
 
     /**
      * 
-     * @param {DEDA.Core.ProxyServer.Proxy.Config} config - 
-     * @returns {DEDA.Core.ProxyServer.Proxy.Config}
+     * @param {DEDA.ProxyServer.Proxy.Config} config - 
+     * @returns {DEDA.ProxyServer.Proxy.Config}
      */
     load()
     {
-        const config = this.config.proxy;
+        super.load();
+        const config = this.config;
 
         // If the URL is not defined then throw exception.
         if (!config.upstream) throw new Error("PROXY-CONFIG is missing upstream parameter");
@@ -149,7 +148,7 @@ class HTTP extends Route
 
     /**
      * 
-     * @param {DEDA.Core.ProxyServer.Context} context - 
+     * @param {DEDA.ProxyServer.Context} context - 
      */
     exec(context)
     {
@@ -214,7 +213,7 @@ class HTTP extends Route
     /**
      * Emit error with `status`.
      *
-     * @param {DEDA.Core.ProxyServer.Context} context -
+     * @param {DEDA.ProxyServer.Context} context -
      * @param {number} status
      * @private
      */
@@ -241,6 +240,6 @@ class HTTP extends Route
 HTTP.register();
 
 // Export the class
-HTTP.namespace = "DEDA.Core.ProxyServer.Routes.HTTP";
+HTTP.namespace = "DEDA.ProxyServer.Proxy.HTTP";
 module.exports = HTTP;
 };
