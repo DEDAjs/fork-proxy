@@ -10,6 +10,21 @@
         "enableUncaughtException": true
     },
 
+    "logs": [
+        {
+            "id": "global",
+            "type": "logger",
+            "format": "${request.socket.remoteAddress} - ${process.pid} - ${request._startTime} ${request.method} ${request.url} HTTP/${request.httpVersion} ${response.statusCode} ${response.headers.content-length} ${request.headers.user-agent}\n",
+
+            "stream": {
+                "type": "stream-file-rotating",
+                "size": "1M",
+                "totalFile": 3,
+                "path": "${env.cwd}/docs/www/logs/access.log"
+            }
+        }
+    ],
+
     "servers": [
         {
             "type": "server-http",
@@ -29,6 +44,7 @@
 
     "routes": [
         {
+            "log": "global",
             "match": {"hostname": "${env.hostname}"},
 
             "routes": [

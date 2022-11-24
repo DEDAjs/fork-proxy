@@ -1,3 +1,5 @@
+const { Components } = require("./Component.js");
+
 {
 /**
  * Copyright Notice: This file is subject to the terms and conditions defined in file https://deda.ca/LICENSE-CODE.txt
@@ -40,14 +42,14 @@ class App
          * reference it within the routes.
          * @property {DEDA.ProxyServer.Logger}
          */
-        this.logs = {};
+        this.logs = [];
 
         /**
          * A list of Rate-Limiters. This is created using the given configuration. The unique name of each limiter 
          * can be referenced by the routes.
          * @property {DEDA.ProxyServer.RateLimit}
          */
-        this.rateLimits = {};
+        this.rateLimits = [];
 
         /**
          * A list of HTTP servers as defined within the configuration.
@@ -104,31 +106,17 @@ class App
         // global catch all is enabled then listen to the process global catch exception.
         if (this.config.enableUncaughtException) process.on('uncaughtException', error=>Utility.error(`PROCESS-ERROR - the process has crashed`, error));
 
-        // Create the servers.
-        for (let config of this.config.servers)
-        {
-            // Find the registered server this this config.
-            const Server = Component.findRegistered(config.type);
+        // Traverse the loggers config and create them all.
+        this.loadComponents(this.logs, this.config.logs);
 
-            // Create the server, load it, start it, then add it to the list of servers.
-            const server = new Server(this, config);
-            server.load();
-            this.servers.push(server);
-        }
+        // Create the servers.
+        this.loadComponents(this.servers, this.config.servers);
 
         // Flatten the routes configs.
         const routes = Utility.flattenObject({routes: this.config.routes}, "routes");
 
         // Create the routes.
-        for (let config of routes)
-        {
-            const Route = Component.findRegistered(config.type);
-
-            // Create the route, load it's configuration, and push it to the list of routes.
-            const route = new Route(this, config)
-            route.load()
-            this.routes.push(route);
-        }
+        this.loadComponents(this.routes, routes);
     }
 
     /**
@@ -164,7 +152,7 @@ class App
         if (route.rateLimit && route.rateLimit.decrement(context)) return;
 
         // If the route has a specific logger then log to it.
-        route.log?.write(context);
+        route.log?.log(context);
 
         // Execute the route.
         route.proxy(context);
@@ -192,6 +180,37 @@ class App
 
         // If no match found then return null.
         return {route: null, match: null};
+    }
+
+
+    /**
+     * 
+     * @param {object[]} configs - The list of configurations
+     * @returns 
+     */
+    loadComponents(components, configs)
+    {
+        // Traverse the loggers config and create them all.
+        for (let config of configs)
+        {
+            // Find the registered server this this config.
+            const Class = Component.findRegistered(config.type);
+
+            // Create the server, load it, start it, then add it to the list of servers.
+            const component = new Class(this, config);
+            component.load();
+
+            // Add the component to the list of components.
+            components.push(component);
+
+            // If there is an ID then use it to set it within the array.
+            if (config.id)
+            {
+                // If the ID already exists then throw exception.
+                if (components[config.id] !== undefined) throw new Error(`APP-COMPONENT-LOAD component with the same ID already exists: ${config.id}`);
+                components[config.id] = component;
+            }
+        }
     }
 }
 

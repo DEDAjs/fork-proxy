@@ -4,7 +4,7 @@
  */
 "use strict";
 
-const Balancer = require("../../Balancer.js");
+const Balancer = require("../Balancer.js");
 
 /**
  * This is a server load balancer base class that implements a simple round-robin. 

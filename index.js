@@ -10,11 +10,16 @@ module.exports = {
     App         : require("./src/App.js"),
     Cluster     : require("./src/Cluster.js"),
 
-    // Logger      : require("./src/Logger.js"),
     // RateLimit   : require("./src/RateLimit.js"),
 
     Proxy       : require("./src/Proxy.js"),
     Server      : require("./src/Server.js"),
+    Logger      : require("./src/Logger.js"),
+
+    Stream: {
+        File         : require("./src/Stream/FileStream.js"),
+        RotatingFile : require("./src/Stream/RotatingFileStream.js")
+    },
 
     Server: {
         HTTP: require("./src/Server/HTTP.js")
@@ -33,7 +38,7 @@ module.exports = {
         // SMTP    : require("./src/Proxy/SMTP.js")   // Future implementation
 
         Balancer: {
-            RoundRobin: require("./src/Proxy/Balancer/RoundRobin.js")
+            RoundRobin: require("./src/Balancer/RoundRobin.js")
         }
     },
 
