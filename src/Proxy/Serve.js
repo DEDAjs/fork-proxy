@@ -60,8 +60,8 @@ class Serve extends Proxy
             index: false,
 
             cacheControl: true,
-            immutable: false,
-            maxAge: 0,
+            immutable: true,
+            maxAge: 60 * 60 * 1000, // ms
             eTag: true
         });
     }
@@ -314,6 +314,8 @@ class Serve extends Proxy
      */
     isModified(context)
     {
+        console.log("not modified");
+
         // fields
         const noneMatch = context.request.headers["if-none-match"];
         const modifiedSince = context.request.headers["if-modified-since"];
@@ -336,19 +338,12 @@ class Serve extends Proxy
         if (modifiedSince)
         {
             const lastModified = context.response.getHeader("last-modified");
-            const modifiedStale = !lastModified || !(this.parseHttpDate(lastModified) <= this.parseHttpDate(modifiedSince))
+            const modifiedStale = !lastModified || lastModified !== modifiedSince
 
             if (modifiedStale) return true;
         }
 
         return false;
-    }
-
-    parseHttpDate(date)
-    {
-        var timestamp = date && Date.parse(date);
-        // istanbul ignore next: guard against date.js Date.parse patching
-        return typeof(timestamp) === "number" ? timestamp : NaN
     }
 }
 

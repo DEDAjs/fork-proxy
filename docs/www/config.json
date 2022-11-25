@@ -31,7 +31,7 @@
             "type": "rate-limit",
 
             "windowMs": 10000,
-            "max": 5,
+            "max": 100,
             "standardHeaders": false,
 
             "store": {
