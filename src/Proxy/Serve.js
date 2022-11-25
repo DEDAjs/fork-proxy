@@ -16,6 +16,7 @@ const Status = require("../Common/Status.json");
  * There are the list of supported features.
  * 
  *  - HEAD vs GET
+ *  - Supports ETag and Max-Age
  *  - Caching is done using the file system and directly within this class.
  *  - Directory listing is not supported within the proxy server.
  *  
@@ -26,7 +27,6 @@ const Status = require("../Common/Status.json");
  */
 class Serve extends Proxy
 {
-
     /**
      * Returns the name of the property that a config must have in-order to classify it as a static file server route.
      * Used by the super class to register this route with the application. When the application loads the
@@ -58,7 +58,11 @@ class Serve extends Proxy
             statusCode: 200,
             lastModified: true,
             index: false,
-            cache: false
+
+            cacheControl: true,
+            immutable: false,
+            maxAge: 0,
+            eTag: true
         });
     }
 
@@ -147,8 +151,17 @@ class Serve extends Proxy
             // Setup the headers for the using the stats. Then stream the file content.
             this.setHeaders(context, fullPath, stat);
 
+            // Check if cache/ETAG is enabled and if the content has changed. If not then return 304 message.
+            if (context.response.statusCode === 200  && !this.isModified(context))
+            {
+                // Remove content headers.
+                ["Content-Encoding", "Content-Language", "Content-Length", "Content-Range", "Content-Type"].forEach( header=>context.response.removeHeader(header) );
+                // Send not-modified status code and end.
+                context.response.statusCode = 304;
+                context.response.end();
+            }
             // If only headers are required then we are done.
-            if (context.request.method === "HEAD") context.response.end();
+            else if (context.request.method === "HEAD") context.response.end();
             // Otherwise send the file
             else this.stream(context, fullPath);
         });
@@ -208,15 +221,24 @@ class Serve extends Proxy
      */
     setHeaders(context, fullPath, stat)
     {
+        const config = this.config;
+        const response = context.response;
+
+        // If cache control is enabled then add the information.
+        if (config.cacheControl) response.setHeader("Cache-Control", `public, max-age=${Math.floor(config.maxAge / 1000)}${config.immutable ? ", immutable" : ''}`);
+
         // If we are to send the last modified date then send it.
-        if (this.config.lastModified) context.response.setHeader("Last-Modified", stat.mtime.toUTCString());
+        if (config.lastModified) response.setHeader("Last-Modified", stat.mtime.toUTCString());
+
+        // If the e-tag option is set then add it to the header.
+        if (config.eTag) response.setHeader("ETag", `W/"${stat.size.toString(16)}-${stat.mtime.getTime().toString(16)}"`);
 
         // Set the content length
         context.response.setHeader("Content-Length", stat.size);
 
         // Finally the type. Start by getting the extension. If a content type was found then set it within the header.
         const type = Mime[path.extname(fullPath)];
-        if (type) context.response.setHeader("Content-Type", type.mime + (type.charset ? '; charset=' + type.charset : ''));
+        if (type) response.setHeader("Content-Type", type.mime + (type.charset ? '; charset=' + type.charset : ''));
     }
 
     /**
@@ -284,6 +306,49 @@ class Serve extends Proxy
 
         // Create the created path object.
         return {pathname, parts};
+    }
+
+    /**
+     * 
+     * @param {DEDA.ProxyServer.Context} context -
+     */
+    isModified(context)
+    {
+        // fields
+        const noneMatch = context.request.headers["if-none-match"];
+        const modifiedSince = context.request.headers["if-modified-since"];
+
+        // unconditional request
+        if (!modifiedSince && !noneMatch) return true;
+
+        // Always return stale when Cache-Control: no-cache
+        const cacheControl = context.request.headers["cache-control"];
+        if (cacheControl && cacheControl.indexOf("no-cache") > -1) return true;
+
+        // if-none-match
+        if (noneMatch && noneMatch !== '*')
+        {
+            const etag = context.response.getHeader("etag");
+            if (!etag || noneMatch !== etag) return true;
+        }
+
+        // if-modified-since
+        if (modifiedSince)
+        {
+            const lastModified = context.response.getHeader("last-modified");
+            const modifiedStale = !lastModified || !(this.parseHttpDate(lastModified) <= this.parseHttpDate(modifiedSince))
+
+            if (modifiedStale) return true;
+        }
+
+        return false;
+    }
+
+    parseHttpDate(date)
+    {
+        var timestamp = date && Date.parse(date);
+        // istanbul ignore next: guard against date.js Date.parse patching
+        return typeof(timestamp) === "number" ? timestamp : NaN
     }
 }
 
