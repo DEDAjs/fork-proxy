@@ -112,6 +112,6 @@ class MemoryStore extends Component
 
 // Export the class
 MemoryStore.namespace = "DEDA.ProxyServer.Store.Memory";
-MemoryStore.register();
+MemoryStore.registerComponent();
 module.exports = MemoryStore;
 };

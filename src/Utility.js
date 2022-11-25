@@ -252,11 +252,13 @@ class Utility
      */
     static log(message, isWorker = false)
     {
-        // If this is not a cluster message then format the message.
-        if (!isWorker) message = `LOG   [${Utility.formatDate()}] ${process.pid} - ${message}`;
+        message = `LOG   [${Utility.formatDate()}] ${process.pid} - ${message}`;
+        console.log(message);
 
-        if (cluster.isPrimary) console.log(message);
-        else process.send({id: "log", type: "log", message});
+        // If this is not a cluster message then format the message.
+        //if (!isWorker) message = `LOG   [${Utility.formatDate()}] ${process.pid} - ${message}`;
+        //if (cluster.isPrimary) console.log(message);
+        //else process.send({id: "log", type: "log", message});
     }
 
     /**

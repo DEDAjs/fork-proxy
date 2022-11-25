@@ -10,7 +10,9 @@ const path  = require("path");
 const http  = require("http");
 const https = require("https");
 
-const Server  = require("../Server.js");
+const Route  = require("../Proxy/Route.js");
+const Component = require("../Component.js");
+
 const Utility = require("../Utility.js");
 
 /**
@@ -21,7 +23,7 @@ const Utility = require("../Utility.js");
  * @memberof DEDA.ProxyServer.Server
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class HTTP extends Server 
+class HTTP extends Component 
 {
     /**
      * Initializes the server and loads the given configurations.
@@ -47,6 +49,13 @@ class HTTP extends Server
         this.watcher = null;
 
         /**
+         * A list of routes/locations roles used to redirect, serve files, or proxy requests.
+         * These are loaded from the global components instances.
+         * @property {DEDA.ProxyServer.Route[]}
+         */
+        this.routes = [];
+
+        /**
          * The request HTTP request handler.
          * @param {http.ClientRequest} request -
          * @param {http.ServerResponse} response - 
@@ -54,7 +63,7 @@ class HTTP extends Server
          * @see [https://nodejs.org/docs/latest/api/http.html#class-httpserverresponse](http.ServerResponse)
          * @returns 
          */
-        this.handler = (request, response)=>this.app.onRequest(request, response);
+        this.handler = (request, response)=>this.onRequest(request, response);
     }
 
 
@@ -107,6 +116,9 @@ class HTTP extends Server
         // Actually load the keys
         if (config.keyPath)  config.key = fs.readFileSync(config.keyPath, "utf-8");
         if (config.certPath) config.cert = fs.readFileSync(config.certPath, "utf-8");
+
+        // Find all the routes components and separate them to make ti faster to match them. NOTE: Order is important.
+        for (let component of Component.components) if (component instanceof Route) this.routes.push(component);
     }
 
     /**
@@ -147,10 +159,69 @@ class HTTP extends Server
             });
         }
     }
+
+
+
+    /**
+     * The HTTP request handler interface. This is called by the http server when a request is received.
+     * HTTP servers use the `this.app.onRequest()` to link to this method. This method contains all the logic
+     * for handling HTTP requests.
+     * 
+     * @param {http.ClientRequest} request - The http client request. See {@link https://nodejs.org/docs/latest/api/http.html#class-httpclientrequest|http.ClientRequest}
+     * @param {http.ServerResponse} response - The http server response. See {@link https://nodejs.org/docs/latest/api/http.html#class-httpserverresponse|http.ServerResponse}
+     */
+    async onRequest(request, response)
+    {
+        // Parse the URL.
+        const url = Utility.parseUrl(request);
+
+        // Traverses the list of routes to find a match for the URL.
+        const {route, match} = this.findMatch(url);
+
+        // If no match found then do nothing.
+        if (!route) return response.end();
+
+        // Create the context that will be used for processing this request.
+        const context = {request, response, url, route, match, process, token: null};
+
+        // Check for rate-limit
+        if (route.rateLimit && await route.rateLimit.decrement(context)) return;
+
+        // If the route has a specific logger then log to it.
+        route.log?.log(context);
+
+        // Execute the route.
+        route.proxy(context);
+    }
+
+    /**
+     * Traverses the list of routes and finds the first route that matches the given URL.
+     * The url is parsed using the {@link Utility.parseUrl()} method.
+     * 
+     * @param {URL} url - The parsed WHATWG URL. See {@link https://nodejs.org/api/url.html#class-url|URL Class}
+     * @returns {object} - Returns an object that contains {route, match}. The match is the RegExp match result used to determine what part was matched.
+     */
+    findMatch(url)
+    {
+        // Traverse the list of matches and find the first match.
+        let route = null;
+        let match = null;
+
+        // Traverse the route to find the first match.
+        for (route of this.routes)
+        {
+            match = route.isMatch(url);
+            if (match) return {match, route};
+        }
+
+        // If no match found then return null.
+        return {route: null, match: null};
+    }
+
 }
 
 // Register this implementation with the application. Export the class
 HTTP.namespace = "DEDA.ProxyServer.Server.HTTP";
-HTTP.register();
+HTTP.registerComponent();
 module.exports = HTTP;
 };

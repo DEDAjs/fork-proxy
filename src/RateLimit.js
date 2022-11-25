@@ -128,6 +128,6 @@ class RateLimit extends Component
 
 // Export the class
 RateLimit.namespace = "DEDA.ProxyServer.RateLimit";
-RateLimit.register();
+RateLimit.registerComponent();
 module.exports = RateLimit;
 };

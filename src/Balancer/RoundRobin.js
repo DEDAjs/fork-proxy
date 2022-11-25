@@ -4,7 +4,7 @@
  */
 "use strict";
 
-const Balancer = require("../Balancer.js");
+const Balancer = require("./Balancer.js");
 
 /**
  * This is a server load balancer base class that implements a simple round-robin. 
@@ -74,6 +74,6 @@ class RoundRobin extends Balancer
 
 // Register this implementation with the application. Export the class
 RoundRobin.namespace = "DEDA.ProxyServer.Proxy.Balancer.RoundRobin";
-RoundRobin.register();
+RoundRobin.registerComponent();
 module.exports = RoundRobin;
 };

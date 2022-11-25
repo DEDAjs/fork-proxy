@@ -7,7 +7,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const Proxy = require("../Proxy.js");
+const Route = require("./Route.js");
 
 const Mime = require("../Common/Mime.json");
 const Status = require("../Common/Status.json");
@@ -25,7 +25,7 @@ const Status = require("../Common/Status.json");
  * @memberof DEDA.ProxyServer.Proxy
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class Serve extends Proxy
+class Serve extends Route
 {
     /**
      * Returns the name of the property that a config must have in-order to classify it as a static file server route.
@@ -349,6 +349,6 @@ class Serve extends Proxy
 
 // Register this implementation with the application. Export the class
 Serve.namespace = "DEDA.ProxyServer.Proxy.Serve";
-Serve.register();
+Serve.registerComponent();
 module.exports = Serve;
 };

@@ -4,7 +4,7 @@
  */
 "use strict";
 
-const Component = require("./Component.js");
+const Component = require("../Component.js");
 
 /**
  * This is a server load balancer base class that implements a simple round-robin. 

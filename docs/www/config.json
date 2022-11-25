@@ -4,9 +4,10 @@
     },
 
     "cluster": {
-        "enabled": true,
+        "enabledCluster": true,
         "numberOfWorkers": 4,
-        "restartDelay": 1000,
+        "workerDelayRestart": 1000,
+
         "enableUncaughtException": true,
 
         "components": [
@@ -18,105 +19,58 @@
                 "path": "${env.cwd}/docs/www/logs/access.log"
             },
             {
-                "id": "SharedStore",
+                "id": "MemoryStore",
                 "type": "store-memory"
             }
         ]
     },
 
-    "rateLimits":
-    [
-        {
-            "id": "global",
-            "type": "rate-limit",
+    "app": {
 
-            "windowMs": 10000,
-            "max": 100,
-            "standardHeaders": false,
+        "enableUncaughtException": true,
 
-            "store": {
+        "components": [
+            {
+                "id": "shared-store",
                 "type": "store-shared",
-                "storeId": "SharedStore"
-            }
-        }
-    ],
-
-    "logs":
-    [
-        {
-            "id": "global",
-            "type": "logger",
-            "format": "${request.socket.remoteAddress} - ${process.pid} - ${request._startTime} ${request.method} ${request.url} HTTP/${request.httpVersion} ${response.statusCode} ${response.headers.content-length} ${request.headers.user-agent}\n",
-
-            "stream": {
+                "storeId": "MemoryStore"
+            },
+            {
+                "id": "LogStream",
                 "type": "stream-shared",
                 "streamId": "SharedStream"
+            },
+
+            {
+                "id": "Logger",
+                "type": "logger",
+                "format": "${request.socket.remoteAddress} - ${process.pid} - ${request._startTime} ${request.method} ${request.url} HTTP/${request.httpVersion} ${response.statusCode} ${response.headers.content-length} ${request.headers.user-agent}\n",
+                "streamId": "LogStream"
+            },
+
+            {
+                "type": "server-http",
+                "port": 8080,
+                "host": "0.0.0.0"
+            },
+            {
+                "type": "server-http",
+                "port": 4443,
+                "host": "0.0.0.0",
+                "key" : "${env.cwd}/docs/www/ssl/private.key",
+                "cert": "${env.cwd}/docs/www/ssl/cert.crt",
+                "encrypted": true,
+                "watch": true
+            },
+
+
+
+            {
+                "type": "proxy-serve",
+                "desc": "The main Website",
+
+                "root": "${env.cwd}/docs/www/html/"
             }
-        }
-    ],
-
-    "servers": [
-        {
-            "type": "server-http",
-            "port": 8080,
-            "host": "0.0.0.0"
-        },
-        {
-            "type": "server-http",
-            "port": 4443,
-            "host": "0.0.0.0",
-            "key" : "${env.cwd}/docs/www/ssl/private.key",
-            "cert": "${env.cwd}/docs/www/ssl/cert.crt",
-            "encrypted": true,
-            "watch": true
-        }
-    ],
-
-    "routes": [
-        {
-            "log": "global",
-            "rateLimit": "global",
-            "match": {"hostname": "${env.hostname}"},
-
-            "routes": [
-                {
-                    "type": "proxy-redirect",
-                    "match": { "protocol": "http:" },
-
-                    "url": "https://${url.hostname}:4443${url.pathname}${url.search}",
-                    "statusCode": 307
-                },
-                {
-                    "type": "proxy-http",
-                    "desc": "Proxy to justwash.ca",
-
-                    "match": { "pathname": "//^/app/deda/"},
-                    "headers": { "x-forwarded-for": "${request.socket.remoteAddress}" },
-                    
-                    "balancer": {
-                        "type": "balancer-round-robin"
-                    },
-
-                    "upstream": [
-                        {"server": "https://lcchomes.com/", "down": false},
-                        {"server": "https://deda.ca/"     , "down": false},
-                        {"server": "https://test.deda.ca/"     , "down": false}
-                    ]
-                },
-                {
-                    "type": "proxy-serve",
-                    "desc": "The main Website",
-
-                    "root": "${env.cwd}/docs/www/html/"
-                },
-                {
-                    "type": "proxy-serve",
-                    "desc": "Final Catch all and return 404 error",
-
-                    "root": "${env.cwd}/docs/www/html/404.html",
-                    "statusCode": 400
-                }
-            ]
-        }
-    ]
+        ]
+    }
 }

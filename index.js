@@ -8,10 +8,7 @@ module.exports = {
     Status      : require("./src/Common/Status.json"),
 
     App         : require("./src/App.js"),
-    Cluster     : require("./src/Cluster.js"),
 
-    Proxy       : require("./src/Proxy.js"),
-    Server      : require("./src/Server.js"),
     Logger      : require("./src/Logger.js"),
     RateLimit   : require("./src/RateLimit.js"),
 
@@ -34,10 +31,11 @@ module.exports = {
     },
 
     Proxy: {
-        Serve   : require("./src/Proxy/Serve.js"),
-        Redirect: require("./src/Proxy/Redirect.js"),
+        Route       : require("./src/Proxy/Route.js"),
+        Serve       : require("./src/Proxy/Serve.js"),
+        Redirect    : require("./src/Proxy/Redirect.js"),
 
-        HTTP    : require("./src/Proxy/HTTP.js"),
+        HTTP        : require("./src/Proxy/HTTP.js"),
         // TCP     : require("./src/Proxy/TCP.js"),   // Future implementation
         // UDP     : require("./src/Proxy/UDP.js"),   // Future implementation
         // SMTP    : require("./src/Proxy/SMTP.js")   // Future implementation

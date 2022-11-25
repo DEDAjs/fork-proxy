@@ -113,6 +113,6 @@ class FileStream extends Component
 
 // Export the class
 FileStream.namespace = "DEDA.ProxyServer.Stream.File";
-FileStream.register();
+FileStream.registerComponent();
 module.exports = FileStream;
 };

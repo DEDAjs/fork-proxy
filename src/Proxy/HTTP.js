@@ -10,7 +10,7 @@ const URL = require("url");
 const http = require("http");
 const https = require("https");
 
-const Proxy = require("../Proxy.js");
+const Route = require("./Route.js");
 const Utility = require("../Utility.js");
 
 /**
@@ -25,7 +25,7 @@ const Utility = require("../Utility.js");
  * @memberof DEDA.ProxyServer.Proxy
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class HTTP extends Proxy
+class HTTP extends Route
 {
     /**
      * The unique type of this component used by the application configuration loader.
@@ -147,6 +147,6 @@ class HTTP extends Proxy
 
 // Register this implementation with the application. Export the class
 HTTP.namespace = "DEDA.ProxyServer.Proxy.HTTP";
-HTTP.register();
+HTTP.registerComponent();
 module.exports = HTTP;
 };

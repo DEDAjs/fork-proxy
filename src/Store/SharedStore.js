@@ -60,6 +60,6 @@ class SharedStore extends Component
 
 // Export the class
 SharedStore.namespace = "DEDA.ProxyServer.Store.Shared";
-SharedStore.register();
+SharedStore.registerComponent();
 module.exports = SharedStore;
 };

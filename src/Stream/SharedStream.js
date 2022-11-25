@@ -58,6 +58,6 @@ class SharedStream extends Component
 
 // Export the class
 SharedStream.namespace = "DEDA.ProxyServer.Stream.Shared";
-SharedStream.register();
+SharedStream.registerComponent();
 module.exports = SharedStream;
 };

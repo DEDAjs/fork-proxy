@@ -8,7 +8,7 @@ const { config } = require("process");
 
 const url = require("url");
 
-const Proxy   = require("../Proxy.js");
+const Route   = require("./Route.js");
 const Utility = require("../Utility.js");
 
 const Status  = require("../Common/Status.json");
@@ -21,7 +21,7 @@ const Status  = require("../Common/Status.json");
  * @memberof DEDA.ProxyServer.Proxy
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class Redirect extends Proxy
+class Redirect extends Route
 {
     /**
      * Returns the name of the property that a config must have in-order to classify it as a redirect route.
@@ -104,6 +104,6 @@ class Redirect extends Proxy
 
 // Register this implementation with the application. Export the class
 Redirect.namespace = "DEDA.ProxyServer.Proxy.Redirect";
-Redirect.register();
+Redirect.registerComponent();
 module.exports = Redirect;
 };

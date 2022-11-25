@@ -4,7 +4,7 @@
  */
 "use strict";
 
-const Component = require("./Component.js");
+const Component = require("../Component.js");
 
 /**
  * This is the parent class of all proxy routes that handles the upstream or route processing of incoming requests.
@@ -15,7 +15,7 @@ const Component = require("./Component.js");
  * @memberof DEDA.ProxyServer
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class Proxy extends Component
+class Route extends Component
 {
     /**
      * Creates a new route with the given configuration.
@@ -158,6 +158,6 @@ class Proxy extends Component
 }
 
 // Export the class
-Proxy.namespace = "DEDA.ProxyServer.Proxy";
-module.exports = Proxy;
+Route.namespace = "DEDA.ProxyServer.Route";
+module.exports = Route;
 };

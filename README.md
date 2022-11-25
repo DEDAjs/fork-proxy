@@ -1,3 +1,8 @@
+
+TODO: flatten the config file to make it more componatized.
+TODO: import files.
+
+
 # DEDA Proxy Server
 
 A fully featured fast and light-weight proxy server with no dependencies fully configured using JSON file (Node replacement for Nginx). The idea is to have a very small code base and focuses on performance and security.

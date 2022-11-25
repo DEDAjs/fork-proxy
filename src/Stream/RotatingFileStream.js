@@ -423,6 +423,6 @@ class RotatingFileStream extends Component
 
 // Export the class
 RotatingFileStream.namespace = "DEDA.Core.ProxyServer.Stream.RotatingFile";
-RotatingFileStream.register();
+RotatingFileStream.registerComponent();
 module.exports = RotatingFileStream;
 };

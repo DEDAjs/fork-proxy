@@ -59,12 +59,10 @@ class Logger extends Component
         const config = this.config;
 
         // Make sure the stream exists.
-        if (!config.stream || typeof(config.stream) !== "object") throw new Error(`LOGGER-CONFIG missing required 'stream' configuration: ${JSON.stringify(config)}`);
+        if (!config.streamId || typeof(config.streamId) !== "string") throw new Error(`LOGGER-CONFIG missing required 'streamId' configuration: ${JSON.stringify(config)}`);
 
-        // Create the logger stream.
-        const Stream = Component.findRegistered(config.stream.type);
-        this.stream = new Stream(this, config.stream);
-        this.stream.load();
+        // Get the stream with the given ID. This throws an exception if not found.
+        this.stream = Component.getComponentById(config.streamId);
     }
 
     /**
@@ -148,6 +146,6 @@ class Logger extends Component
 
 // Export the class
 Logger.namespace = "DEDA.ProxyServer.Logger";
-Logger.register();
+Logger.registerComponent();
 module.exports = Logger;
 };
