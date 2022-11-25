@@ -10,7 +10,20 @@
         "enableUncaughtException": true
     },
 
-    "logs": [
+    "rateLimits":
+    [
+        {
+            "id": "global",
+            "type": "rate-limit",
+
+            "windowMs": 60000,
+            "max": 5,
+            "standardHeaders": false
+        }
+    ],
+
+    "logs":
+    [
         {
             "id": "global",
             "type": "logger",
@@ -45,6 +58,7 @@
     "routes": [
         {
             "log": "global",
+            "rateLimit": "global",
             "match": {"hostname": "${env.hostname}"},
 
             "routes": [

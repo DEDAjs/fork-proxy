@@ -109,6 +109,9 @@ class App
         // Traverse the loggers config and create them all.
         this.loadComponents(this.logs, this.config.logs);
 
+        // Load the rate limiters
+        this.loadComponents(this.rateLimits, this.config.rateLimits);
+
         // Create the servers.
         this.loadComponents(this.servers, this.config.servers);
 

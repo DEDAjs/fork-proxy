@@ -141,8 +141,6 @@ class RotatingFileStream extends Component
         // If we are not flushed then push the data onto the queue.
         if (this.isFlushed)
         {
-            console.log("Flushed - Write");
-
             this.rotate();
             this.isFlushed = this._write(data);
         }

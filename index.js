@@ -10,11 +10,10 @@ module.exports = {
     App         : require("./src/App.js"),
     Cluster     : require("./src/Cluster.js"),
 
-    // RateLimit   : require("./src/RateLimit.js"),
-
     Proxy       : require("./src/Proxy.js"),
     Server      : require("./src/Server.js"),
     Logger      : require("./src/Logger.js"),
+    RateLimit   : require("./src/RateLimit.js"),
 
     Stream: {
         File         : require("./src/Stream/FileStream.js"),
@@ -36,10 +35,10 @@ module.exports = {
         // TCP     : require("./src/Proxy/TCP.js"),   // Future implementation
         // UDP     : require("./src/Proxy/UDP.js"),   // Future implementation
         // SMTP    : require("./src/Proxy/SMTP.js")   // Future implementation
+    },
 
-        Balancer: {
-            RoundRobin: require("./src/Balancer/RoundRobin.js")
-        }
+    Balancer: {
+        RoundRobin: require("./src/Balancer/RoundRobin.js")
     },
 
     namespace: "DEDA.ProxyServer"
