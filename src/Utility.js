@@ -5,6 +5,7 @@
 "use strict";
 
 const url = require("url");
+const cluster = require("cluster");
 
 const Status = require("./Common/Status.json");
 
@@ -249,9 +250,13 @@ class Utility
      * The format is: LOG <date-time> <process.id> message
      * @param {string} message - The message to log.
      */
-    static log(message)
+    static log(message, isWorker = false)
     {
-        console.log(`LOG   [${Utility.formatDate()}] ${process.pid} - ${message}`);
+        // If this is not a cluster message then format the message.
+        if (!isWorker) message = `LOG   [${Utility.formatDate()}] ${process.pid} - ${message}`;
+
+        if (cluster.isPrimary) console.log(message);
+        else process.send({id: "log", type: "log", message});
     }
 
     /**

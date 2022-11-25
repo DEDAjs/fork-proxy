@@ -95,6 +95,36 @@ class Component
         if (!Class) throw new Error(`COMPONENT-REGISTER unable to find component with type: ${type}`);
         return Class;
     }
+
+    /**
+     * 
+     * @param {object[]} configs - The list of configurations
+     * @returns 
+     */
+    static loadRegistered(components, app, configs)
+    {
+        // Traverse the loggers config and create them all.
+        for (let config of configs)
+        {
+            // Find the registered server this config.
+            const Class = Component.findRegistered(config.type);
+
+            // Create the server, load it, start it, then add it to the list of servers.
+            const component = new Class(app, config);
+            component.load();
+
+            // Add the component to the list of components.
+            components.push(component);
+
+            // If there is an ID then use it to set it within the array.
+            if (config.id)
+            {
+                // If the ID already exists then throw exception.
+                if (components[config.id] !== undefined) throw new Error(`APP-COMPONENT-LOAD component with the same ID already exists: ${config.id}`);
+                components[config.id] = component;
+            }
+        }
+    }
 }
 
 /**

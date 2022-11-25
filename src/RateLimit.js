@@ -24,8 +24,10 @@ class RateLimit extends Component
         // Call the super constructor.
         super(app, config);
 
-        this.store = {
-        };
+        /**
+         * @member {DEDA.ProxyServer.Store}
+         */
+        this.store = null;
     }
 
     /**
@@ -50,11 +52,28 @@ class RateLimit extends Component
     }
 
     /**
+     * Validates and initializes the component configurations.
+     * @throws {Error} Throws an exception if the configuration was invalid.
+     */
+    load()
+    {
+        const config = this.config;
+
+        // Make sure the stream exists.
+        if (!config.store || typeof(config.store) !== "object") throw new Error(`RATE-LIMIT-CONFIG missing required 'store' configuration: ${JSON.stringify(config)}`);
+
+        // Create the store.
+        const Store = Component.findRegistered(config.store.type);
+        this.store = new Store(this, config.store);
+        this.store.load();
+    }
+
+    /**
      * 
      * @param {*} request 
      * @param {*} response 
      */
-    decrement(context)
+    async decrement(context)
     {
         const {request, response} = context;
 
@@ -62,14 +81,10 @@ class RateLimit extends Component
         const key = this.generateKey(request);
 
         // Check if the key already exits.
-        let entry = this.store[key];
+        let entry = await this.store.get(key);
 
         // If not then add it.
-        if (!entry)
-        {
-            entry = {hits: 0, resetTime: Date.now() + this.config.windowMs};
-            this.store[key] = entry;
-        }
+        if (!entry) entry = {hits: 0, resetTime: Date.now() + this.config.windowMs};
         // Otherwise if it has expired then reset it.
         else if (entry.resetTime < Date.now()) 
         {
@@ -78,6 +93,9 @@ class RateLimit extends Component
         }
         // Otherwise increment the hits and test it. If passed max then return error.
         else entry.hits++
+
+        // Save the entry back in the store.
+        await this.store.set(key, entry);
 
         const isLimitReached = (entry.hits > this.config.max);
 

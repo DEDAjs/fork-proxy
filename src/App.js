@@ -64,9 +64,10 @@ class App
         this.routes = [];
 
 
-        // Process the environment variables.
-        if (!this.env.cwd) this.env.cwd = process.cwd();
-        Utility.replaceRefs(this.config, this);
+        this.callbacks = new Map();
+        this.callbackCount = 0;
+
+        process.on("message", message=>this.onMessage(message));
 
         // Load the configs.
         this.load();
@@ -107,19 +108,19 @@ class App
         if (this.config.enableUncaughtException) process.on('uncaughtException', error=>Utility.error(`PROCESS-ERROR - the process has crashed`, error));
 
         // Traverse the loggers config and create them all.
-        this.loadComponents(this.logs, this.config.logs);
+        Component.loadRegistered(this.logs, this, this.config.logs);
 
         // Load the rate limiters
-        this.loadComponents(this.rateLimits, this.config.rateLimits);
+        Component.loadRegistered(this.rateLimits, this, this.config.rateLimits);
 
         // Create the servers.
-        this.loadComponents(this.servers, this.config.servers);
+        Component.loadRegistered(this.servers, this, this.config.servers);
 
         // Flatten the routes configs.
         const routes = Utility.flattenObject({routes: this.config.routes}, "routes");
 
         // Create the routes.
-        this.loadComponents(this.routes, routes);
+        Component.loadRegistered(this.routes, this, routes);
     }
 
     /**
@@ -137,7 +138,7 @@ class App
      * @param {http.ClientRequest} request - The http client request. See {@link https://nodejs.org/docs/latest/api/http.html#class-httpclientrequest|http.ClientRequest}
      * @param {http.ServerResponse} response - The http server response. See {@link https://nodejs.org/docs/latest/api/http.html#class-httpserverresponse|http.ServerResponse}
      */
-    onRequest(request, response)
+    async onRequest(request, response)
     {
         // Parse the URL.
         const url = Utility.parseUrl(request);
@@ -152,7 +153,7 @@ class App
         const context = {request, response, url, route, match, process, token: null};
 
         // Check for rate-limit
-        if (route.rateLimit && route.rateLimit.decrement(context)) return;
+        if (route.rateLimit && await route.rateLimit.decrement(context)) return;
 
         // If the route has a specific logger then log to it.
         route.log?.log(context);
@@ -185,35 +186,43 @@ class App
         return {route: null, match: null};
     }
 
+    onMessage(message)
+    {
+        const callbackId = message?.callbackId || null;
+
+        // check for a callbackId.
+        if (callbackId && this.callbacks.has(callbackId)) 
+        {
+            const callback = this.callbacks.get(callbackId);
+            this.callbacks.delete(callbackId);
+            callback(message.result);
+        }
+        else if (message.componentId)
+        {
+            // get the component and execute the method.
+        }
+    }
 
     /**
      * 
-     * @param {object[]} configs - The list of configurations
-     * @returns 
+     * @param {*} id 
+     * @param {*} method 
+     * @param {*} args 
+     * @param {*} callback 
      */
-    loadComponents(components, configs)
+    processSend(componentId, method, args, callback)
     {
-        // Traverse the loggers config and create them all.
-        for (let config of configs)
+        let callbackId = null;
+
+        // If there is a callback then add it to the list.
+        if (callback)
         {
-            // Find the registered server this this config.
-            const Class = Component.findRegistered(config.type);
-
-            // Create the server, load it, start it, then add it to the list of servers.
-            const component = new Class(this, config);
-            component.load();
-
-            // Add the component to the list of components.
-            components.push(component);
-
-            // If there is an ID then use it to set it within the array.
-            if (config.id)
-            {
-                // If the ID already exists then throw exception.
-                if (components[config.id] !== undefined) throw new Error(`APP-COMPONENT-LOAD component with the same ID already exists: ${config.id}`);
-                components[config.id] = component;
-            }
+            callbackId = `${process.pid}-${this.callbackCount++}`;
+            this.callbacks.set(callbackId, callback);
         }
+
+        // Send the request to the primary process to store the key.
+        process.send({componentId, method, args, callbackId});
     }
 }
 

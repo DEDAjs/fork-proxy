@@ -12,7 +12,7 @@ const Component = require("../Component.js");
 /**
  * 
  * @class
- * @memberof DEDA.Core.ProxyServer.Logger
+ * @memberof DEDA.ProxyServer.Stream
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
 class FileStream extends Component
@@ -103,10 +103,6 @@ class FileStream extends Component
         return this.stream.write(data);
     }
 
-    close() { this.stream.close(); }
-
-    destroy() { this.stream.destroy(); }
-
     onDrained()
     {
         // If there is anything in the queue then write it to the stream.
@@ -116,7 +112,7 @@ class FileStream extends Component
 }
 
 // Export the class
-FileStream.namespace = "DEDA.Core.ProxyServer.Stream.File";
+FileStream.namespace = "DEDA.ProxyServer.Stream.File";
 FileStream.register();
 module.exports = FileStream;
 };

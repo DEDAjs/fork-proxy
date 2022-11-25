@@ -3,12 +3,16 @@
  */
 "use strict";
 
-const {App, Cluster} = require("./index.js");
+const {App, Cluster, Utility} = require("./index.js");
 
 // Get the last parameter within the command line and use it to load the options.
 const configPath = process.argv[process.argv.length - 1];
 // If the config path ends in json then load it. Otherwise set it to null.
 const config = (configPath.toLowerCase().endsWith(".json") ? require(configPath) : null);
+
+// Process the environment variables.
+if (!config?.env.cwd) config.env.cwd = process.cwd();
+Utility.replaceRefs(config, config);
 
 // Starts the application without any clustering. Used to pass to the cluster to start multiple workers.
 function startApp(config)
@@ -22,6 +26,7 @@ function startCluster(config)
 {
     // Create the cluster manager.
     const cluster = global.cluster = new Cluster(config, startApp);
+    cluster.load();
     cluster.start();
 }
 

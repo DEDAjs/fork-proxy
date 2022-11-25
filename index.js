@@ -17,7 +17,13 @@ module.exports = {
 
     Stream: {
         File         : require("./src/Stream/FileStream.js"),
-        RotatingFile : require("./src/Stream/RotatingFileStream.js")
+        RotatingFile : require("./src/Stream/RotatingFileStream.js"),
+        Shared       : require("./src/Stream/SharedStream.js")
+    },
+
+    Store: {
+        Memory  : require("./src/Store/MemoryStore.js"),
+        Shared  : require("./src/Store/SharedStore.js")
     },
 
     Server: {
