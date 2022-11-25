@@ -28,8 +28,10 @@ class MemoryStore extends Component
          * @member {Map}
          */
         this.map = new Map();
+
+        this.checkPeriodTimer = null;
     }
-   
+  
     /**
      * The unique type of this component used by the application configuration loader.
      * @returns {string} - The name/type of the config `type` value that identifies this component.
@@ -37,16 +39,75 @@ class MemoryStore extends Component
     static get type() { return "store-memory"; }
 
     /**
+     * Returns all the possible options with their default values for this component.
+     * @returns {DEDA.ProxyServer.Store.Memory.Cache} Returns the all the component options set to the default values.
+     */
+    static getDefaultConfigs()
+    {
+        return {
+            stdTTL: 5 * 1000,
+            checkPeriod: 10 * 1000
+        }
+    }
+
+    /**
+     * Validates and initializes the component configurations.
+     * @throws {Error} Throws an exception if the configuration was invalid.
+     */
+    load()
+    {
+        const config = this.config;
+
+        if (config.stdTTL === 0) console.assert(`MEMORY-STORE-CONFIG it is highly recommended to set the stdTTL to > 0 otherwise you will have memory issues.`);
+    }
+
+    /**
      * Writes the given data to the file stream.
      * @param {string | buffer} data - The data to add to the current file stream.
      */
-    set(key, value) { this.map.set(key, value) }
+    set(key, value, ttl = this.config.stdTTL)
+    {
+        this.map.set(key, {value, expiresOn: (ttl === 0 ? 0 : Date.now() + ttl)});
+
+        // If there isn't a timer already then start one.
+        this.startCheckPeriodTimer();
+    }
 
     /**
      * 
      * @param {*} key 
      */
-    get(key) { return this.map.get(key); }
+    get(key)
+    {
+        const entry = this.map.get(key);
+        return entry?.value || undefined;
+    }
+
+    /**
+     * 
+     */
+    cleanup()
+    {
+        // If there is a timer then stop it.
+        if (this.checkPeriodTimer) clearTimeout(this.checkPeriodTimer);
+        this.checkPeriodTimer = null;
+
+        const time = Date.now();
+
+        // If the key has expired then delete it.
+        for (let [key, value] of this.map)
+            if (value.expiresOn && value.expiresOn < time)
+                this.map.delete(key);
+
+        // If the map is empty then start a new timer.
+        if (this.map.size) this.startCheckPeriodTimer();
+    }
+
+
+    startCheckPeriodTimer()
+    {
+        if (!this.checkPeriodTimer) this.checkPeriodTimer = setTimeout(()=>this.cleanup(), this.config.checkPeriod);
+    }
 }
 
 // Export the class
