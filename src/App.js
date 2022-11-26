@@ -176,6 +176,13 @@ class App
             this.ipcCallbacks.delete(message.resultId);
             callback(message.result);
         }
+        // If this is a message forward to another worker then...
+        else if (message.componentId && message.componentId.startsWith("["))
+        {
+            // Get the worker name.
+            // const workerName = message.componentId.indexOf
+            throw new Error("NOT IMPLEMENTED YET!!!!");
+        }
         // If this is an RMI request then...
         else if (message.componentId)
         {
