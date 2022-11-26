@@ -5,8 +5,6 @@
 "use strict";
 
 const url = require("url");
-const cluster = require("cluster");
-
 const Status = require("./Common/Status.json");
 
 /**
@@ -37,7 +35,6 @@ const UNMATCHED_SURROGATE_PAIR_REPLACE = '$1\uFFFD$2'
  */
 class Utility
 {
-
     /**
      * Creates a URL object from the given request that is used to find a match and process the request.
      * 
@@ -62,8 +59,6 @@ class Utility
         return _url;
     }
 
-
-
     /**
      * Encode a URL to a percent-encoded form, excluding already-encoded sequences.
      *
@@ -85,7 +80,6 @@ class Utility
     {
         return String(url).replace(UNMATCHED_SURROGATE_PAIR_REGEXP, UNMATCHED_SURROGATE_PAIR_REPLACE).replace(ENCODE_CHARS_REGEXP, encodeURI);
     }
-
 
     /**
      * Finds and replaces all references within the given value to the references found within the given
@@ -201,19 +195,6 @@ class Utility
     }
 
     /**
-     * 
-     * @param {*} source 
-     * @param {*} dest 
-     * @param {*} defaults 
-     */
-    static copyProperties(source, destination, defaults)
-    {
-        for (let name in defaults) destination[name] = (source.hasOwnProperty(name) ? source[name] : defaults[name]);
-        return destination;
-    }
-
-
-    /**
      * Creates a date formatted string. 
      * 
      * @param {Date} [date] - A date object to convert to string.
@@ -246,72 +227,44 @@ class Utility
     }
 
     /**
-     * Logs a system message to the standard output stream.
-     * The format is: LOG <date-time> <process.id> message
-     * @param {string} message - The message to log.
-     */
-    static log(message, isWorker = false)
-    {
-        message = `LOG   [${Utility.formatDate()}] ${process.pid} - ${message}`;
-        console.log(message);
-
-        // If this is not a cluster message then format the message.
-        //if (!isWorker) message = `LOG   [${Utility.formatDate()}] ${process.pid} - ${message}`;
-        //if (cluster.isPrimary) console.log(message);
-        //else process.send({id: "log", type: "log", message});
-    }
-
-    /**
-     * Logs the given error to the standard output stream.
-     * @param {string} message - The error message to log.
-     * @param {Exception} [error] - The error exception to log if exists.
-     */
-    static error(message, error)
-    {
-        console.error(`ERROR [${Utility.formatDate()}] ${process.pid} - ${message} (${error ? error.toString() : '-'})`);
-        if (error) console.error(error);
-    }
-
-    /**
-     * Flatten the objects and merges their properties at 1 level deep.
+     * Performs a deep search on the given object or array and flattens the properties based on sub-arrays.
      * 
      * @param {*} object 
      * @param {*} flattenOnPropertyName 
-     */
-    static flattenObject(object, flattenOnPropertyName)
+     */    
+    static flattenObject(object, flattenOnPropertyName, flatObjects = [])
     {
-        // Get the value fo the flatten-on-Property-name. If it is not an array then just return the single object.
-        const objects = object[flattenOnPropertyName];
-        if (!Array.isArray(objects)) return [object];
+        // If the given object is an array then traverse it's entries and flatten them.
+        if (Array.isArray(object)) for (let subObject of object) this.flattenObject(subObject, flattenOnPropertyName, flatObjects);
 
-        // The list of the flat objects.
-        const flatObjects = [];
-
-        // Otherwise traverse the sub objects and process them.
-        for (let subObject of objects)
+        // If the object is an object then traverse it's properties.
+        else if (object && typeof(object) === "object")
         {
-            // Merge the parent properties within the sub-object.
-            for (let name in object)
+            // If the object contains a flatten-on property name then flatten the object.
+            const innerObjects = object[flattenOnPropertyName];
+            if (innerObjects && Array.isArray(innerObjects))
             {
-                // Skip the flatten property.
-                if (name === flattenOnPropertyName) continue;
+                // Create the base object that will be used to merge with the child components.
+                const parentObject = Object.assign({}, object);
+                delete(parentObject[flattenOnPropertyName]);
 
-                // Get the property value from the object and sub object.
-                const value = object[name];
+                // Traverse the inner components and add the parentObject properties to them.
+                for (let innerObject of object[flattenOnPropertyName])
+                {
+                    // Perform a deep assign of the inner-object with the parent-object.
+                    innerObject = this.assign(JSON.parse(JSON.stringify(parentObject)), innerObject, 3);
 
-                // if it does not exist within the subObject then add it to it.
-                if (!subObject.hasOwnProperty(name)) subObject[name] = value;
-
-                // Otherwise merge the 2 if they are an object.
-                else if (typeof(subObject[name]) === "object" && typeof(value) === "object") subObject[name] = Object.assign({}, value, subObject[name]);
+                    // Flatten the inner Object using the given object as the parent object.
+                    this.flattenObject(innerObject, flattenOnPropertyName, flatObjects);
+                }
             }
-
-            // Before adding the subObject to the array flatten it first.
-            const flatSubObjects = this.flattenObject(subObject, flattenOnPropertyName);
-            for (let flatSubObject of flatSubObjects) flatObjects.push(flatSubObject);
+            // Otherwise just add it to the flat-objects list and finish.
+            else flatObjects.push(object);
         }
+        // Otherwise just add it back to the flatObjects array.
+        else flatObjects.push(object);
 
-        // Return the list of flatten objects.
+        // Return the flattened list.
         return flatObjects;
     }
 

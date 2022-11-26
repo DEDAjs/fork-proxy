@@ -4,6 +4,8 @@
  */
 "use strict";
 
+const Utility = require("./Utility.js");
+
 /**
  * This is the base component for all application plug-in components that all components must extend.
  * This is part of a simple component plug-in architecture structure that loads components from a configuration file 
@@ -147,7 +149,10 @@ class Component
         // Check the parameters are valid.
         if (!Array.isArray(configs)) throw new Error(`COMPONENT-LOAD config must a an array of component configurations`);
 
-        // Holds the created components that will later be used to load them.
+        // Traverse the configs and flatten them first.
+        configs = Utility.flattenObject(configs, "components");
+
+        // Holds the created components that will later be used to load, then start them.
         const components = [];
 
         // Traverse the loggers config and create them all.

@@ -128,7 +128,7 @@ class HTTP extends Route
             if (!response.headersSent) Utility.httpError(context.response, 503);
 
             // Report error.
-            Utility.error(`PROXY-REQUEST-ERROR upstream server error: ${upstream.server}`);
+            this.error(`PROXY-REQUEST-ERROR upstream server error: ${upstream.server}`);
         });
 
         // Pipe the request to the response.

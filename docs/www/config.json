@@ -8,6 +8,11 @@
         "numberOfWorkers": 4,
         "workerDelayRestart": 1000,
 
+        "workers": [
+            {"name": "app", "count": 4 },
+            {"name": "logger", "count": 1 }
+        ],
+
         "enableUncaughtException": true,
 
         "components": [
@@ -25,6 +30,21 @@
         ]
     },
 
+    "logger": {
+
+        "enableUncaughtException": true,
+
+        "components": [
+            {
+                "id": "SharedStream",
+                "namespace": "Stream.RotatingFile",
+                "size": "1M",
+                "totalFile": 3,
+                "path": "${env.cwd}/docs/www/logs/access1.log"
+            }
+        ]
+    },
+
     "app": {
 
         "enableUncaughtException": true,
@@ -38,7 +58,7 @@
             {
                 "id": "DEDA.LogStream",
                 "namespace": "Stream.Shared",
-                "streamId": "SharedStream"
+                "streamId": "[logger].SharedStream"
             },
 
             {
@@ -77,47 +97,52 @@
             },
 
 
-
-
             {
-                "namespace": "Proxy.Redirect",
-                "match": { "protocol": "http:" },
-
-                "url": "https://${url.hostname}:4443${url.pathname}${url.search}",
-                "statusCode": 307
-            },
-            {
-                "namespace": "Proxy.HTTP",
-                "desc": "Proxy to justwash.ca",
-
                 "loggerId": "DEDA.Logger",
                 "rateLimitId": "DEDA.RateLimiter",
 
-                "match": { "pathname": "//^/app/deda/"},
-                "headers": { "x-forwarded-for": "${request.socket.remoteAddress}" },
+                "match": {"hostname": "${env.hostname}"},
 
-                "balancer": {
-                    "namespace": "Balancer.RoundRobin"
-                },
+                "components": [
 
-                "upstream": [
-                    {"server": "https://lcchomes.com/", "down": false},
-                    {"server": "https://deda.ca/"     , "down": false},
-                    {"server": "https://test.deda.ca/", "down": false}
+                    {
+                        "namespace": "Proxy.Redirect",
+                        "match": { "protocol": "http:" },
+
+                        "url": "https://${url.hostname}:4443${url.pathname}${url.search}",
+                        "statusCode": 307
+                    },
+                    {
+                        "namespace": "Proxy.HTTP",
+                        "desc": "Proxy to justwash.ca",
+
+                        "match": { "pathname": "//^/app/deda/"},
+                        "headers": { "x-forwarded-for": "${request.socket.remoteAddress}" },
+
+                        "balancer": {
+                            "namespace": "Balancer.RoundRobin"
+                        },
+
+                        "upstream": [
+                            {"server": "https://lcchomes.com/", "down": false},
+                            {"server": "https://deda.ca/"     , "down": false},
+                            {"server": "https://test.deda.ca/", "down": false}
+                        ]
+                    },
+                    {
+                        "namespace": "Proxy.FileServe",
+                        "desc": "The main Website",
+
+                        "root": "${env.cwd}/docs/www/html/"
+                    },
+                    {
+                        "namespace": "Proxy.FileServe",
+                        "desc": "Final Catch all and return 404 error",
+
+                        "root": "${env.cwd}/docs/www/html/404.html",
+                        "statusCode": 400
+                    }
                 ]
-            },
-            {
-                "namespace": "Proxy.FileServe",
-                "desc": "The main Website",
-
-                "root": "${env.cwd}/docs/www/html/"
-            },
-            {
-                "namespace": "Proxy.FileServe",
-                "desc": "Final Catch all and return 404 error",
-
-                "root": "${env.cwd}/docs/www/html/404.html",
-                "statusCode": 400
             }
         ]
     }

@@ -136,7 +136,7 @@ class HTTP extends Component
         this.server = (config.encrypted ? https.createServer(config, this.handler) : http.createServer(config, this.handler) );
 
         // listen to the port.
-        this.server.listen(config.port, config.host, ()=>Utility.log(`SERVER-START - listening on  ${config.host}:${config.port}!`) );
+        this.server.listen(config.port, config.host, ()=>this.app.log(`SERVER-START - listening on  ${config.host}:${config.port}!`) );
 
 
         // If there is already a watcher then close it.
@@ -152,7 +152,7 @@ class HTTP extends Component
                 if (eventType !== "change") return;
 
                 // Log the event.
-                Utility.log(`SERVER-KEY-CHANG - crypto-keys has changed. Restarting server in ${config.watchRestartDelay}ms`);
+                this.app.log(`SERVER-KEY-CHANG - crypto-keys has changed. Restarting server in ${config.watchRestartDelay}ms`);
 
                 // Stop the server, when it stops, restart it. Wait about x ms before starting the server. This will give enough time for any other file to be updated as well.
                 setTimeout( ()=>this.server.close(()=>this.start()), config.watchRestartDelay);

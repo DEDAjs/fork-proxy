@@ -28,8 +28,10 @@ class App
      */
     constructor(config)
     {
+        // If the process environment has a worker name to use then use it.
+        if (process.env.workerName && config[process.env.workerName]) config = config[process.env.workerName];
         // Fetch the configs based on the cluster settings.
-        config = (config?.cluster.enabledCluster && cluster.isPrimary ? config.cluster : config.app);
+        else config = (config?.cluster.enabledCluster && cluster.isPrimary ? config.cluster : config.app);
 
         /**
          * The given options mixed in with the default options if not set.
@@ -76,11 +78,26 @@ class App
      */
     load()
     {
+        const config = this.config;
+
         // Global catch all is enabled then listen to the process global catch exception.
-        if (this.config.enableUncaughtException) process.on('uncaughtException', error=>Utility.error(`PROCESS-ERROR - the process has crashed`, error));
+        if (config.enableUncaughtException) process.on('uncaughtException', error=>this.error(`PROCESS-ERROR - the process has crashed`, error));
 
         // If no workers are specified then use the CPU count
-        if (!this.config.numberOfWorkers) this.config.numberOfWorkers = os.cpus().length;
+        if (!config.numberOfWorkers) this.config.numberOfWorkers = os.cpus().length;
+
+        // If there is no workers property then create one using the numberOfWorkers 
+        if (Array.isArray(config.workers))
+        {
+            for (let worker of config.workers)
+            {
+                // Make sure the app name exists and a count is set.
+                if (typeof(worker.name)  !== "string") app.error(`APP-CONFIG cluster config worker missing name '${JSON.stringify(config)}'`);
+                if (typeof(worker.count) !== "number") app.error(`APP-CONFIG cluster config worker missing count '${JSON.stringify(config)}'`);
+            }
+        }
+        // Otherwise generate a new one.
+        else  config.workers = [ {name: "app", count: config.numberOfWorkers} ];
     }
 
     /**
@@ -91,7 +108,7 @@ class App
         // If clustering is enabled and this is the primary process then create the sub processes.
         if (this.config.enabledCluster && cluster.isPrimary)
         {
-            Utility.log(`CLUSTER-PRIMARY - Primary init ${this.config.numberOfWorkers} workers...`);
+            this.log(`CLUSTER-PRIMARY - Primary init ${this.config.numberOfWorkers} workers...`);
 
             // Listen to cluster active and exist events.
             cluster.on("online", worker=>worker.on("message", event=>this.onMessage(event, worker)));
@@ -99,18 +116,18 @@ class App
             // If a worker exists then restart it.
             cluster.on("exit", (worker, code, signal)=>{
 
-                Utility.log(`CLUSTER-WORKER-DIED - Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`);
+                this.log(`CLUSTER-WORKER-DIED - Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`);
 
                 // Fork again after a small delay
                 setTimeout( ()=>{ cluster.fork(); }, this.config.workerDelayRestart);
             });
 
-            // Fork for the number of set workers.
-            for (let count = 0; count < this.config.numberOfWorkers; count++) cluster.fork();
+            // Create the workers base don the configs.
+            for (let worker of this.config.workers) for (let count = 0; count < worker.count; count++) cluster.fork({workerName: worker.name});
         }
         else
         {
-            Utility.log(`CLUSTER-WORKER-START - Starting new cluster worker ${process.pid}`);
+            this.log(`CLUSTER-WORKER-START - Starting new cluster worker ${process.pid}`);
 
             // If we are running within a a clustered environment then listen to parent process messages
             process.on("message", message=>this.onMessage(message, process));
@@ -153,7 +170,7 @@ class App
         {
             // Get the callback with the given Id. If not found then report error.
             const callback = this.ipcCallbacks.get(message.resultId);
-            if (!callback) return Utility.error(`IPC-MESSAGE callback not found: ${message.resultId}`);
+            if (!callback) return this.error(`IPC-MESSAGE callback not found: ${message.resultId}`);
 
             // If found then remove the callback from the list and invoke with the results.
             this.ipcCallbacks.delete(message.resultId);
@@ -175,16 +192,16 @@ class App
                 // If a function then call it.
                 if (method && typeof(method) === "function") result = await method.call(component, ...message.args);
                 // Otherwise log error.
-                else Utility.error(`IPC-MESSAGE invoking method in component that does not exist: ${message.componentId}.${message.method}(...)`);
+                else this.error(`IPC-MESSAGE invoking method in component that does not exist: ${message.componentId}.${message.method}(...)`);
             }
             // If not found then log error but always make sure to return something if there is a returnId.
-            else Utility.error(`IPC-MESSAGE component not found: ${message.componentId}`);
+            else this.error(`IPC-MESSAGE component not found: ${message.componentId}`);
 
             // If there is a returnId then return the result.
             if (message.returnId && sender) sender.send({resultId: message.returnId, result});
         }
         // Otherwise log error.
-        else Utility.error(`IPC-MESSAGE invalid message format: ${JSON.stringify(message)}`);
+        else this.error(`IPC-MESSAGE invalid message format: ${JSON.stringify(message)}`);
     }
 
     /**
@@ -216,6 +233,29 @@ class App
 
         // Send the request to the primary process to store the key.
         process.send({componentId, method, args, returnId});
+    }
+
+
+    /**
+     * Logs a system message to the standard output stream.
+     * The format is: LOG <date-time> <process.id> message
+     * @param {string} message - The message to log.
+     */
+    log(message)
+    {
+        message = `LOG   [${Utility.formatDate()}] ${process.pid} - ${message}`;
+        console.log(message);
+    }
+
+    /**
+     * Logs the given error to the standard output stream.
+     * @param {string} message - The error message to log.
+     * @param {Exception} [error] - The error exception to log if exists.
+     */
+    error(message, error)
+    {
+        console.error(`ERROR [${Utility.formatDate()}] ${process.pid} - ${message} (${error ? error.toString() : '-'})`);
+        if (error) console.error(error);
     }
 }
 
