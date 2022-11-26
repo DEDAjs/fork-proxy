@@ -155,3 +155,16 @@ common properties that can be assigned to all routes.
 I've linked a reference to the npm packages that was used as inspiration for this project.
 
 
+
+# Files
+
+- Cluster.js - 
+- Server.js - The main class that loads the configs and creates the services.
+    - Logger.js - 
+        - RotatingFileSystem.js - 
+    - RateLimit.js - 
+    - Route.js - 
+        - Proxy.js
+        - Redirect.js        
+        - Serve.js
+            - Cache.js
