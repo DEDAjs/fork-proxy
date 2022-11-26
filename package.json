@@ -1,7 +1,7 @@
 {
-    "name": "deda-core-server-proxy",
-    "version": "3.0.0",
-    "description": "",
+    "name": "deda-proxy-server",
+    "version": "0.1.0",
+    "description": "A fully featured fast and light-weight proxy server with no dependencies fully configured using JSON file (Node replacement for Nginx)",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,15 +11,15 @@
         "url": "git+https://gitlab.com/deda-v3/core/proxy-server.git"
     },
     "keywords": [],
-    "author": "",
+    "author": "Charbel Choueiri <Charbel Choueiri@gmail.com>",
     "license": "ISC",
     "bugs": {
         "url": "https://gitlab.com/deda-v3/core/proxy-server/issues"
     },
     "homepage": "https://gitlab.com/deda-v3/core/proxy-server#readme",
-    "deda": {
-        "files": [
-           "./src/ProxyServer.js"
-        ]
+    "dependencies": {
+    },
+    "devDependencies": {
+        "mocha": "^10.1.0"
     }
 }
