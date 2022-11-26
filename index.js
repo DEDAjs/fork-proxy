@@ -32,7 +32,7 @@ module.exports = {
 
     Proxy: {
         Route       : require("./src/Proxy/Route.js"),
-        Serve       : require("./src/Proxy/Serve.js"),
+        FileServe   : require("./src/Proxy/FileServe.js"),
         Redirect    : require("./src/Proxy/Redirect.js"),
 
         HTTP        : require("./src/Proxy/HTTP.js"),

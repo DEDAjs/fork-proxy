@@ -60,7 +60,7 @@ class FileStream extends Component
      * The unique type of this component used by the application configuration loader.
      * @returns {string} - The name/type of the config `type` value that identifies this component.
      */
-    static get type() { return "stream-file"; }
+    static get namespace() { return "Stream.File"; }
 
     /**
      * 
@@ -112,7 +112,5 @@ class FileStream extends Component
 }
 
 // Export the class
-FileStream.namespace = "DEDA.ProxyServer.Stream.File";
-FileStream.registerComponent();
-module.exports = FileStream;
+module.exports = FileStream.registerComponent();
 };

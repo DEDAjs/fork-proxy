@@ -40,7 +40,7 @@ class RoundRobin extends Balancer
      * The unique type of this component used by the application configuration loader.
      * @returns {string} - The name/type of the config `type` value that identifies this component.
      */
-    static get type() { return "balancer-round-robin"; }
+    static get namespace() { return "Balancer.RoundRobin"; }
 
     /**
      * Returns the next upstream server to send/proxy the request to.
@@ -73,7 +73,5 @@ class RoundRobin extends Balancer
 
 
 // Register this implementation with the application. Export the class
-RoundRobin.namespace = "DEDA.ProxyServer.Proxy.Balancer.RoundRobin";
-RoundRobin.registerComponent();
-module.exports = RoundRobin;
+module.exports = RoundRobin.registerComponent();
 };

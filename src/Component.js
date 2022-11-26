@@ -62,7 +62,7 @@ class Component
      * 
      * @returns {string} - The type of the component. For example this can be: proxy, server, logger, balancer, stream, etc.
      */
-    static get type() { return "N/A"; }
+    static get namespace() { return "N/A"; }
 
     /**
      * Returns all the possible options with their default values for this component.
@@ -100,21 +100,21 @@ class Component
         const Class = this;
 
         // If the component already exists then throw exception.
-        if (this.Components.hasOwnProperty(Class.type)) throw new Error(`COMPONENT-REGISTER component with the same type already exists: ${Class.type}`);
+        if (this.Components.hasOwnProperty(Class.namespace)) throw new Error(`COMPONENT-REGISTER component with the same type already exists: ${Class.namespace}`);
 
         // Add the route to the application route registry.
-        this.Components[Class.type] = Class;
+        return this.Components[Class.namespace] = Class;
     }
 
     /**
      * Finds the component class with the given type and name.
-     * @param {string} type - The component type.
+     * @param {string} namespace - The component namespace.
      * @param {DEDA.ProxyServer.Component} - Returns the matched component or undefined if not found.
      */
-    static findComponent(type)
+    static findComponent(namespace)
     {
-        const Class = this.Components[type];
-        if (!Class) throw new Error(`COMPONENT-FIND unable to find component with type: ${type}`);
+        const Class = this.Components[namespace];
+        if (!Class) throw new Error(`COMPONENT-FIND unable to find component with namespace: ${namespace}`);
         return Class;
     }
 
@@ -154,9 +154,7 @@ class Component
         for (let config of configs)
         {
             // Find the registered server this config. This throws an exception if not found.
-            const ComponentClass = Component.Components[config.type];
-            if (!ComponentClass) throw new Error(`COMPONENT-LOAD unable to find component with type: ${config.type}`);
-
+            const ComponentClass = this.findComponent(config.namespace);
             // Create the component instance form the class and load it.
             const component = new ComponentClass(app, config);
 
@@ -203,6 +201,5 @@ Component.components = [];
 
 
 // Export the class
-Component.namespace = "DEDA.ProxyServer.Component";
 module.exports = Component;
 };

@@ -74,7 +74,7 @@ class RotatingFileStream extends Component
      * The unique type of this component used by the application configuration loader.
      * @returns {string} - The name/type of the config `type` value that identifies this component.
      */
-    static get type() { return "stream-file-rotating"; }
+    static get namespace() { return "Stream.RotatingFile"; }
 
     /**
      * 
@@ -422,7 +422,5 @@ class RotatingFileStream extends Component
 }
 
 // Export the class
-RotatingFileStream.namespace = "DEDA.Core.ProxyServer.Stream.RotatingFile";
-RotatingFileStream.registerComponent();
-module.exports = RotatingFileStream;
+module.exports = RotatingFileStream.registerComponent();
 };

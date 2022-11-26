@@ -36,7 +36,7 @@ class MemoryStore extends Component
      * The unique type of this component used by the application configuration loader.
      * @returns {string} - The name/type of the config `type` value that identifies this component.
      */
-    static get type() { return "store-memory"; }
+    static get namespace() { return "Store.Memory"; }
 
     /**
      * Returns all the possible options with their default values for this component.
@@ -111,7 +111,5 @@ class MemoryStore extends Component
 }
 
 // Export the class
-MemoryStore.namespace = "DEDA.ProxyServer.Store.Memory";
-MemoryStore.registerComponent();
-module.exports = MemoryStore;
+module.exports = MemoryStore.registerComponent();
 };

@@ -25,16 +25,13 @@ const Status = require("../Common/Status.json");
  * @memberof DEDA.ProxyServer.Proxy
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class Serve extends Route
+class FileServe extends Route
 {
     /**
-     * Returns the name of the property that a config must have in-order to classify it as a static file server route.
-     * Used by the super class to register this route with the application. When the application loads the
-     * configuration this is used to identify route types.
-     * 
-     * @returns {string} - The name of the config property that identifies this route.
+     * The unique namespace of this component.
+     * @returns {string} - The unique namespace of this router.
      */
-    static get type() { return "proxy-serve"; }
+    static get namespace() { return "Proxy.FileServe"; }
 
     /**
      * Processes the given configurations. Check is the given root path exists.
@@ -348,7 +345,5 @@ class Serve extends Route
 }
 
 // Register this implementation with the application. Export the class
-Serve.namespace = "DEDA.ProxyServer.Proxy.Serve";
-Serve.registerComponent();
-module.exports = Serve;
+module.exports = FileServe.registerComponent();
 };

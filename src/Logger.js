@@ -36,7 +36,7 @@ class Logger extends Component
      * The unique type of this component used by the application configuration loader.
      * @returns {string} - The name/type of the config `type` value that identifies this component.
      */
-    static get type() { return "logger"; }
+    static get namespace() { return "Logger"; }
 
     /**
      * Returns all the possible options with their default values for this component.
@@ -145,7 +145,5 @@ class Logger extends Component
 }
 
 // Export the class
-Logger.namespace = "DEDA.ProxyServer.Logger";
-Logger.registerComponent();
-module.exports = Logger;
+module.exports = Logger.registerComponent();
 };

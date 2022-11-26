@@ -34,7 +34,7 @@ class RateLimit extends Component
      * The unique type of this component used by the application configuration loader.
      * @returns {string} - The name/type of the config `type` value that identifies this component.
      */
-    static get type() { return "rate-limit"; }
+    static get namespace() { return "RateLimit"; }
 
     /**
      * Returns all the possible options with their default values for this component.
@@ -127,7 +127,5 @@ class RateLimit extends Component
 }
 
 // Export the class
-RateLimit.namespace = "DEDA.ProxyServer.RateLimit";
-RateLimit.registerComponent();
-module.exports = RateLimit;
+module.exports = RateLimit.registerComponent();
 };

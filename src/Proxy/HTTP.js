@@ -31,7 +31,7 @@ class HTTP extends Route
      * The unique type of this component used by the application configuration loader.
      * @returns {string} - The name/type of the config `type` value that identifies this component.
      */
-    static get type() { return "proxy-http"; }
+    static get namespace() { return "Proxy.HTTP"; }
 
     /**
      * Returns all the possible options with their default values for this component.
@@ -146,7 +146,5 @@ class HTTP extends Route
 
 
 // Register this implementation with the application. Export the class
-HTTP.namespace = "DEDA.ProxyServer.Proxy.HTTP";
-HTTP.registerComponent();
-module.exports = HTTP;
+module.exports = HTTP.registerComponent();
 };

@@ -71,7 +71,7 @@ class HTTP extends Component
      * The unique type of this component used by the application configuration loader.
      * @returns {string} - The name/type of the config `type` value that identifies this component.
      */
-    static get type() { return "server-http"; }
+    static get namespace() { return "Server.HTTP"; }
 
     /**
      * Returns all the possible options with their default values for this component.
@@ -221,7 +221,5 @@ class HTTP extends Component
 }
 
 // Register this implementation with the application. Export the class
-HTTP.namespace = "DEDA.ProxyServer.Server.HTTP";
-HTTP.registerComponent();
-module.exports = HTTP;
+module.exports = HTTP.registerComponent();
 };

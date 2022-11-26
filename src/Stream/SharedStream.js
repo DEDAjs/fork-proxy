@@ -31,7 +31,7 @@ class SharedStream extends Component
      * The unique type of this component used by the application configuration loader.
      * @returns {string} - The name/type of the config `type` value that identifies this component.
      */
-    static get type() { return "stream-shared"; }
+    static get namespace() { return "Stream.Shared"; }
 
     /**
      * 
@@ -57,7 +57,5 @@ class SharedStream extends Component
 }
 
 // Export the class
-SharedStream.namespace = "DEDA.ProxyServer.Stream.Shared";
-SharedStream.registerComponent();
-module.exports = SharedStream;
+module.exports = SharedStream.registerComponent();
 };

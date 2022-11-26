@@ -19,7 +19,7 @@ class SharedStore extends Component
      * The unique type of this component used by the application configuration loader.
      * @returns {string} - The name/type of the config `type` value that identifies this component.
      */
-    static get type() { return "store-shared"; }
+    static get namespace() { return "Store.Shared"; }
 
     /**
      * 
@@ -59,7 +59,5 @@ class SharedStore extends Component
 }
 
 // Export the class
-SharedStore.namespace = "DEDA.ProxyServer.Store.Shared";
-SharedStore.registerComponent();
-module.exports = SharedStore;
+module.exports = SharedStore.registerComponent();
 };

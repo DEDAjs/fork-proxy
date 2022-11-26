@@ -13,14 +13,14 @@
         "components": [
             {
                 "id": "SharedStream",
-                "type": "stream-file-rotating",
+                "namespace": "Stream.RotatingFile",
                 "size": "1M",
                 "totalFile": 3,
                 "path": "${env.cwd}/docs/www/logs/access.log"
             },
             {
                 "id": "MemoryStore",
-                "type": "store-memory"
+                "namespace": "Store.Memory"
             }
         ]
     },
@@ -32,29 +32,29 @@
         "components": [
             {
                 "id": "shared-store",
-                "type": "store-shared",
+                "namespace": "Store.Shared",
                 "storeId": "MemoryStore"
             },
             {
                 "id": "LogStream",
-                "type": "stream-shared",
+                "namespace": "Stream.Shared",
                 "streamId": "SharedStream"
             },
 
             {
                 "id": "Logger",
-                "type": "logger",
+                "namespace": "Logger",
                 "format": "${request.socket.remoteAddress} - ${process.pid} - ${request._startTime} ${request.method} ${request.url} HTTP/${request.httpVersion} ${response.statusCode} ${response.headers.content-length} ${request.headers.user-agent}\n",
                 "streamId": "LogStream"
             },
 
             {
-                "type": "server-http",
+                "namespace": "Server.HTTP",
                 "port": 8080,
                 "host": "0.0.0.0"
             },
             {
-                "type": "server-http",
+                "namespace": "Server.HTTP",
                 "port": 4443,
                 "host": "0.0.0.0",
                 "key" : "${env.cwd}/docs/www/ssl/private.key",
@@ -66,7 +66,7 @@
 
 
             {
-                "type": "proxy-serve",
+                "namespace": "Proxy.FileServe",
                 "desc": "The main Website",
 
                 "root": "${env.cwd}/docs/www/html/"
