@@ -4,7 +4,7 @@
  */
 "use strict";
 
-const Component = require("./Component.js");
+const Component = require("../Component.js");
 
 /**
  * 
@@ -43,8 +43,11 @@ class RateLimit extends Component
     static getDefaultConfigs()
     {
         return {
-            windowMs: 1 * 60 * 1000,   // 1 minutes
+            store: null,
+            storeId: null,
+
             max: 100,                  // Limit each IP to 100 requests per `window` (here, per 1 minutes)
+            windowMs: 1 * 60 * 1000,   // 1 minutes
             statusMessage: "Too many requests, please try again later.",
             statusCode: 429,
             setHeaders: true
@@ -59,13 +62,12 @@ class RateLimit extends Component
     {
         const config = this.config;
 
-        // Make sure the stream exists.
-        if (!config.store || typeof(config.store) !== "object") throw new Error(`RATE-LIMIT-CONFIG missing required 'store' configuration: ${JSON.stringify(config)}`);
-
-        // Create the store.
-        const Store = Component.findRegistered(config.store.type);
-        this.store = new Store(this, config.store);
-        this.store.load();
+        // If we are given a store ID then find it.
+        if (config.storeId) this.store = Component.getComponentById(config.storeId);
+        // Otherwise if a config is given then create it.
+        else if (config.store) this.store = Component.loadComponents([config.store], this)[0];
+        // Otherwise throw error because we need a store.
+        else throw new Error(`RATE-LIMIT-CONFIG missing required 'store' or 'storeId' configuration: ${JSON.stringify(config)}`);
     }
 
     /**

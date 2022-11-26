@@ -41,7 +41,7 @@ class SharedStore extends Component
      */
     set(key, value)
     {
-        this.app.app.processSend(this.config.storeId, "set", [key, value]);
+        this.app.send(this.config.storeId, "set", [key, value]);
     }
 
     /**
@@ -51,7 +51,7 @@ class SharedStore extends Component
     get(key)
     {
         return new Promise( (resolve, reject)=>{
-            this.app.app.processSend(this.config.storeId, "get", [key], result=>{
+            this.app.send(this.config.storeId, "get", [key], result=>{
                 resolve(result);
             });
         });

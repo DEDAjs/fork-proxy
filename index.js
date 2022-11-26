@@ -9,8 +9,13 @@ module.exports = {
 
     App         : require("./src/App.js"),
 
-    Logger      : require("./src/Logger.js"),
-    RateLimit   : require("./src/RateLimit.js"),
+    Logger: {
+        Logger: require("./src/Logger/Logger.js")
+    },
+    
+    RateLimiter: {
+        RateLimit: require("./src/RateLimiter/RateLimit.js")
+    },
 
     Stream: {
         File         : require("./src/Stream/FileStream.js"),

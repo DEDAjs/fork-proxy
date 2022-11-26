@@ -31,21 +31,21 @@
 
         "components": [
             {
-                "id": "shared-store",
+                "id": "DEDA.SharedStore",
                 "namespace": "Store.Shared",
                 "storeId": "MemoryStore"
             },
             {
-                "id": "LogStream",
+                "id": "DEDA.LogStream",
                 "namespace": "Stream.Shared",
                 "streamId": "SharedStream"
             },
 
             {
-                "id": "Logger",
+                "id": "DEDA.Logger",
                 "namespace": "Logger",
                 "format": "${request.socket.remoteAddress} - ${process.pid} - ${request._startTime} ${request.method} ${request.url} HTTP/${request.httpVersion} ${response.statusCode} ${response.headers.content-length} ${request.headers.user-agent}\n",
-                "streamId": "LogStream"
+                "streamId": "DEDA.LogStream"
             },
 
             {
@@ -66,10 +66,58 @@
 
 
             {
+                "id": "DEDA.RateLimiter",
+                "namespace": "RateLimit",
+
+                "windowMs": 10000,
+                "max": 10,
+                "standardHeaders": false,
+
+                "storeId": "DEDA.SharedStore"
+            },
+
+
+
+
+            {
+                "namespace": "Proxy.Redirect",
+                "match": { "protocol": "http:" },
+
+                "url": "https://${url.hostname}:4443${url.pathname}${url.search}",
+                "statusCode": 307
+            },
+            {
+                "namespace": "Proxy.HTTP",
+                "desc": "Proxy to justwash.ca",
+
+                "loggerId": "DEDA.Logger",
+                "rateLimitId": "DEDA.RateLimiter",
+
+                "match": { "pathname": "//^/app/deda/"},
+                "headers": { "x-forwarded-for": "${request.socket.remoteAddress}" },
+
+                "balancer": {
+                    "namespace": "Balancer.RoundRobin"
+                },
+
+                "upstream": [
+                    {"server": "https://lcchomes.com/", "down": false},
+                    {"server": "https://deda.ca/"     , "down": false},
+                    {"server": "https://test.deda.ca/", "down": false}
+                ]
+            },
+            {
                 "namespace": "Proxy.FileServe",
                 "desc": "The main Website",
 
                 "root": "${env.cwd}/docs/www/html/"
+            },
+            {
+                "namespace": "Proxy.FileServe",
+                "desc": "Final Catch all and return 404 error",
+
+                "root": "${env.cwd}/docs/www/html/404.html",
+                "statusCode": 400
             }
         ]
     }

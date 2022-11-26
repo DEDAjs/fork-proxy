@@ -52,7 +52,7 @@ class SharedStream extends Component
      */
     write(data)
     {
-        this.app.app.processSend(this.config.streamId, "write", [data]);
+        this.app.send(this.config.streamId, "write", [data]);
     }
 }
 

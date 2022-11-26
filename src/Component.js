@@ -172,13 +172,13 @@ class Component
         }
 
         // Traverse the created components and load them.
-        for (let component of Component.components) component.load();
+        for (let component of components) component.load();
 
         // Traverse the created components and start them all.
-        for (let component of Component.components) component.start();
+        for (let component of components) component.start();
 
         // Return the global list of components.
-        return Component.components;
+        return components;
     }
 }
 

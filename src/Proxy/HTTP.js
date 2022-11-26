@@ -73,14 +73,6 @@ class HTTP extends Route
             // Validate the server URL.
             if (typeof(upstream.server) !== "string") throw new Error(`PROXY-HTTP-CONFIG requires a valid upstream server URL: '${JSON.stringify(config)}'`);
         }
-
-        // If there is load balancer then create it.
-        if (config.balancer)
-        {
-            const Balancer = Component.findRegistered(config.balancer.type);
-            this.balancer = new Balancer(this, config.balancer);
-            this.balancer.load();
-        }
     }
 
     /**

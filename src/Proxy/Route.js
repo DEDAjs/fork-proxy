@@ -59,8 +59,8 @@ class Route extends Component
             id: undefined,
             type: undefined,
             desc: undefined,
-            log: undefined,
-            rateLimit: undefined,
+            loggerId: undefined,
+            rateLimitId: undefined,
             match: {},
         };
     }
@@ -78,26 +78,19 @@ class Route extends Component
         const config = this.config;
 
         // If a log is specified then get it from the application.
-        if (config.log)
-        {
-            // Check the type.
-            if (typeof(config.log) !== "string") throw new Error(`ROUTE-CONFIG log reference must be a string, given: ${config.rateLimit}`);
-
-            // Get the referenced log from the application.
-            this.log = this.app.logs[config.log];
-            if (!this.log) throw new Error(`ROUTE-CONFIG missing referenced log ${config.log}`);
-        }
+        if (config.loggerId) this.log = Component.getComponentById(config.loggerId);
+        // Otherwise if a full config then create a new one.
+        else if (config.logger) this.log = Component.loadComponents([config.logger], this.app)[0];
 
         // If a rate-limiter is provided then fetch it from the application.
-        if (config.rateLimit)
-        {
-            // Check the type.
-            if (typeof(config.rateLimit) !== "string") throw new Error(`ROUTE-CONFIG rateLimit reference must be a string, given: ${config.rateLimit}`);
+        if (config.rateLimitId) this.rateLimit = Component.getComponentById(config.rateLimitId);
+        // Otherwise if a full rate-limit config then create a new one.
+        else if (config.rateLimit) this.rateLimit = Component.loadComponents([config.rateLimit], this.app)[0];
 
-            // Get the referenced rate-limiter
-            this.rateLimit = this.app.rateLimits[config.rateLimit];
-            if (!this.rateLimit) throw new Error(`ROUTE-CONFIG missing referenced rate-limit ${config.rateLimit}`);
-        }
+        // If a balancer ID is specified then get it from the global components list.
+        if (config.balancerId) this.balancer = Component.getComponentById(config.balancerId);
+        // Otherwise if there is a load balancer config then create it.
+        else if (config.balancer) this.balancer = Component.loadComponents([config.balancer], this)[0];
 
         // Process the match object to generate reg-exp from each string entry if required.
         for (let name in config.match)

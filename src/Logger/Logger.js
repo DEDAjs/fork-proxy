@@ -4,8 +4,8 @@
  */
 "use strict";
 
-const Utility = require("./Utility.js");
-const Component = require("./Component.js");
+const Utility = require("../Utility.js");
+const Component = require("../Component.js");
 
 /**
  * 
@@ -46,6 +46,7 @@ class Logger extends Component
     {
         return {
             stream: null, // {type: "<string>" }
+            streamId: null,
             format: "${request.socket.remoteAddress} - ${process.pid} - ${request._startTime} ${request.method} ${request.url} HTTP/${request.httpVersion} ${response.statusCode} ${response.headers.content-length} ${request.headers.user-agent}\n"
         };
     }
@@ -58,11 +59,12 @@ class Logger extends Component
     {   
         const config = this.config;
 
-        // Make sure the stream exists.
-        if (!config.streamId || typeof(config.streamId) !== "string") throw new Error(`LOGGER-CONFIG missing required 'streamId' configuration: ${JSON.stringify(config)}`);
-
-        // Get the stream with the given ID. This throws an exception if not found.
-        this.stream = Component.getComponentById(config.streamId);
+        // If a stream ID is provided then get it.
+        if (config.streamId) this.stream = Component.getComponentById(config.streamId);
+        // Otherwise if a stream config is given then create a new component.
+        else if (config.stream) this.stream = Component.loadComponents([config.stream], this.app)[0];
+        // Otherwise throw exception.
+        else throw new Error(`LOGGER-CONFIG missing required 'streamId' or 'stream' configuration: ${JSON.stringify(config)}`);
     }
 
     /**

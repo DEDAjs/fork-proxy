@@ -156,7 +156,7 @@ class App
             if (!callback) return Utility.error(`IPC-MESSAGE callback not found: ${message.resultId}`);
 
             // If found then remove the callback from the list and invoke with the results.
-            this.ipcCallbacks.delete(callbackId);
+            this.ipcCallbacks.delete(message.resultId);
             callback(message.result);
         }
         // If this is an RMI request then...
@@ -165,7 +165,7 @@ class App
             let result = null;
 
             // Find the component with the given ID.
-            const component = Components.components[message.componentId];
+            const component = Component.components[message.componentId];
 
             // If the component was found then invoke the method. 
             if (component)
@@ -173,7 +173,7 @@ class App
                 // Get the method to invoke.
                 const method = component[message.method];
                 // If a function then call it.
-                if (method && typeof(method) === "function") result = await method(...message.args);
+                if (method && typeof(method) === "function") result = await method.call(component, ...message.args);
                 // Otherwise log error.
                 else Utility.error(`IPC-MESSAGE invoking method in component that does not exist: ${message.componentId}.${message.method}(...)`);
             }
