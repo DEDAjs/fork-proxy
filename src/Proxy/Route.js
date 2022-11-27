@@ -57,7 +57,6 @@ class Route extends Component
     {
         return {
             id: undefined,
-            type: undefined,
             desc: undefined,
             loggerId: undefined,
             rateLimitId: undefined,

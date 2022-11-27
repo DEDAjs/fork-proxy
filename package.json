@@ -8,15 +8,15 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://gitlab.com/deda-v3/core/proxy-server.git"
+        "url": "git+https://gitlab.com/deda-v3/proxy-server/server.git"
     },
     "keywords": [],
     "author": "Charbel Choueiri <Charbel Choueiri@gmail.com>",
     "license": "ISC",
     "bugs": {
-        "url": "https://gitlab.com/deda-v3/core/proxy-server/issues"
+        "url": "https://gitlab.com/deda-v3/proxy-server/server/issues"
     },
-    "homepage": "https://gitlab.com/deda-v3/core/proxy-server#readme",
+    "homepage": "https://gitlab.com/deda-v3/proxy-server/server#readme",
     "dependencies": {
     },
     "devDependencies": {
