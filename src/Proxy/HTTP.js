@@ -41,7 +41,7 @@ class HTTP extends Route
     {
         return Object.assign(super.getDefaultConfigs(), {
             sticky: false,  // NOT IMPLEMENTED YET!
-            upstream: null  // Expecting {server: <string>, down: false}
+            server: null    // string
         });
     }
 
@@ -53,25 +53,11 @@ class HTTP extends Route
     {
         // Call the super loader first.
         super.load();
-        const config = this.config;
-
-        // If the URL is not defined then throw exception.
-        if (!config.upstream) throw new Error(`PROXY-HTTP-CONFIG is missing upstream parameter: '${JSON.stringify(config)}'`);
-        // Ensure the upstream is an array.
-        if (!Array.isArray(config.upstream)) throw new Error(`PROXY-HTTP-CONFIG upstream config must be an array: '${JSON.stringify(config)}'`);
-
-        // Traverse the upstream servers configs and validate them.
-        for (let index = 0; index < config.upstream.length; index++)
+        
+        // If there is no balancer then validate the upstream server.
+        if (!this.balancer)
         {
-            // Get the next server. If it is a string then convert it to an object.
-            let upstream = config.upstream[index]; 
-            if (typeof(upstream) === "string") upstream = {server: upstream};
-
-            // Set the default options.
-            config.upstream[index] = upstream = Object.assign({server: null, down: false}, upstream, {stats: {connections: 0, total: 0, averageTime: 0}});
-
-            // Validate the server URL.
-            if (typeof(upstream.server) !== "string") throw new Error(`PROXY-HTTP-CONFIG requires a valid upstream server URL: '${JSON.stringify(config)}'`);
+            if (!this.config.server || typeof(this.config.server) !== "string") throw new Error(`PROXY-HTTP-CONFIG missing a valid upstream 'server' since no balancer is specified.`);
         }
     }
 
@@ -84,7 +70,7 @@ class HTTP extends Route
         let {request, response} = context;
 
         // If there is a specific balancer specified then use it to find the next server. Otherwise use the first upstream server.
-        const upstream = this.balancer?.next() || this.config.upstream[0];
+        const upstream = this.balancer?.next() || this.config.server;
 
         // Process the proxy URL using the data.
         let proxyUrl = Utility.replaceRefs(upstream.server, context);
@@ -128,7 +114,7 @@ class HTTP extends Route
             if (!response.headersSent) Utility.httpError(context.response, 503);
 
             // Report error.
-            this.error(`PROXY-REQUEST-ERROR upstream server error: ${upstream.server}`);
+            console.error(`PROXY-REQUEST-ERROR upstream server error: ${upstream.server}`);
         });
 
         // Pipe the request to the response.

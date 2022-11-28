@@ -16,13 +16,13 @@ class RateLimit extends Component
 {
     /**
      * Initializes the component and merges the given configurations with the default configurations.
-     * @param {DEDA.ProxyServer.App} app - A reference to the application.
      * @param {object} config - The configuration to use.
+     * @param {DEDA.ProxyServer.App} app - A reference to the application.
      */
-    constructor(app, config)
+    constructor(config, app)
     {
         // Call the super constructor.
-        super(app, config);
+        super(config, app);
 
         /**
          * @member {DEDA.ProxyServer.Store}

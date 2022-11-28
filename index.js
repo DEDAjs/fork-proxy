@@ -7,7 +7,8 @@ module.exports = {
     Mime        : require("./src/Common/Mime.json"),
     Status      : require("./src/Common/Status.json"),
 
-    App         : require("./src/App.js"),
+    Component   : require("./src/Component.js"),
+    Cluster     : require("./src/Cluster.js"),
 
     Logger: {
         Logger: require("./src/Logger/Logger.js")

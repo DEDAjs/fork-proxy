@@ -16,13 +16,14 @@ class SharedStream extends Component
 {
     /**
      * Initializes the component and merges the given configurations with the default configurations.
-     * @param {DEDA.ProxyServer.App} app - A reference to the application.
+     * 
      * @param {object} config - The configuration to use.
+     * @param {DEDA.ProxyServer.App} app - A reference to the application.
      */
-    constructor(app, config)
+    constructor(config, app)
     {
         // Call the super constructor.
-        super(app, config);
+        super(config, app);
 
         // If this is a master then 
     }
@@ -52,7 +53,7 @@ class SharedStream extends Component
      */
     write(data)
     {
-        this.app.send(this.config.streamId, "write", [data]);
+        process.send(this.config.streamId, "write", [data]);
     }
 }
 

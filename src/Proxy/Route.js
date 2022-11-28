@@ -20,13 +20,13 @@ class Route extends Component
     /**
      * Creates a new route with the given configuration.
      * 
-     * @param {DEDA.ProxyServer.App} app - A reference to the parent application instance.
      * @param {DEDA.ProxyServer.Proxy.Config} config - The route configuration.
+     * @param {DEDA.ProxyServer.App} app - A reference to the parent application instance.
      */
-    constructor(app, config)
+    constructor(config, app)
     {
         // Call the super constructor.
-        super(app, config);
+        super(config, app);
 
         /**
          * A reference to the log handler for this route. If null then no logging is required for this route.
@@ -79,12 +79,12 @@ class Route extends Component
         // If a log is specified then get it from the application.
         if (config.loggerId) this.log = Component.getComponentById(config.loggerId);
         // Otherwise if a full config then create a new one.
-        else if (config.logger) this.log = Component.loadComponents([config.logger], this.app)[0];
+        else if (config.logger) this.log = Component.loadComponents([config.logger])[0];
 
         // If a rate-limiter is provided then fetch it from the application.
         if (config.rateLimitId) this.rateLimit = Component.getComponentById(config.rateLimitId);
         // Otherwise if a full rate-limit config then create a new one.
-        else if (config.rateLimit) this.rateLimit = Component.loadComponents([config.rateLimit], this.app)[0];
+        else if (config.rateLimit) this.rateLimit = Component.loadComponents([config.rateLimit])[0];
 
         // If a balancer ID is specified then get it from the global components list.
         if (config.balancerId) this.balancer = Component.getComponentById(config.balancerId);

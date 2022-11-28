@@ -18,6 +18,9 @@ A fully featured, clustered, light-weight, modularized Proxy-Server with no depe
 The idea is to have a very small code base that focuses on performance and security.
 
 * Very small code-base - less code, less bugs, less security holes. This makes it easier for others to read the code and develop components for this project.
+* Code comments - Code is written and commented in a way that can be red like reading a story that describes the process.
+* Code namings - Variable and method names describe their full intension. No abbreviations, or 'i' or 'k' or 'foo' or 'bar' etc. 
+* Code is written for others and your future self - Others must be able to easily read the code. You should be able to easily understand the code 10 years from now.
 * No Dependencies - the simple reason is to keeps security vanroblilities low.
 * Pure Javascript ES6 - No transcoding, transforming, transporting, transposing, etc. Pure code.
 * Full Test Suite - At least this is the goal (on going testing).

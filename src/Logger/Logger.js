@@ -17,13 +17,13 @@ class Logger extends Component
 {
     /**
      * Initializes the component and merges the given configurations with the default configurations.
-     * @param {DEDA.ProxyServer.App} app - A reference to the application.
      * @param {object} config - The configuration to use.
+     * @param {DEDA.ProxyServer.App} app - A reference to the application.
      */
-    constructor(app, config)
+    constructor(config, app)
     {
         // Call the super constructor.
-        super(app, config);
+        super(config, app);
 
         /**
          * 
@@ -62,7 +62,7 @@ class Logger extends Component
         // If a stream ID is provided then get it.
         if (config.streamId) this.stream = Component.getComponentById(config.streamId);
         // Otherwise if a stream config is given then create a new component.
-        else if (config.stream) this.stream = Component.loadComponents([config.stream], this.app)[0];
+        else if (config.stream) this.stream = Component.loadComponents([config.stream])[0];
         // Otherwise throw exception.
         else throw new Error(`LOGGER-CONFIG missing required 'streamId' or 'stream' configuration: ${JSON.stringify(config)}`);
     }

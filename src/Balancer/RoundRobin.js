@@ -23,10 +23,10 @@ class RoundRobin extends Balancer
      * @param {DEDA.ProxyServer.App} app - A reference to the application.
      * @param {object} config - The configuration to use.
      */
-    constructor(app, config)
+    constructor(config, app)
     {
         // Call the super constructor.
-        super(app, config);
+        super(config, app);
 
         /**
          * Keeps track of the current server index.
@@ -51,16 +51,16 @@ class RoundRobin extends Balancer
      */
     next()
     {
-        const config = this.app.config;
-        let tries = config.upstream.length;
+        const upstream = this.config.upstream;
+        let tries = upstream.length;
         while (tries-- > 0)
         {
             // If there is only one in the list then return it.
-            if (config.upstream.length === 1) return this.config.upstream[0];
+            if (upstream.length === 1) return upstream[0];
 
             // Get the next server and move forward. If the index is greater than the length then go back to zero. We could use a modules but it is easier to debug with the actual index.
-            const server = config.upstream[this.index++];
-            if (this.index > config.upstream.length - 1) this.index = 0;
+            const server = upstream[this.index++];
+            if (this.index > upstream.length - 1) this.index = 0;
 
             // If the server is not down then return it.
             if (!server.down) return server;

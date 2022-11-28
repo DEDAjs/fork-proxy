@@ -4,7 +4,7 @@
 "use strict";
 
 const path = require("node:path");
-const {App, Utility} = require("./index.js");
+const {Component, Utility} = require("./index.js");
 
 // Get the last parameter within the command line and use it to load the options.
 const configPath = path.resolve(process.argv[process.argv.length - 1]);
@@ -18,7 +18,8 @@ Utility.replaceRefs(config, config);
 // If no configuration are given then show error and exist.
 if (!config) console.error("Missing config file name as last command line parameter. Example: node main.js config.json");
 
-// Create and start the application/cluster.
-const app = global.app = new App( config );
-app.load();
-app.start();
+// Select the configuration to use based on the env and primary process.
+const useConfig = Component.selectConfig(config);
+
+// Load the component.
+global.app = Component.loadComponents(useConfig)[0];

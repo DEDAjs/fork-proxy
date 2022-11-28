@@ -27,13 +27,13 @@ class HTTP extends Component
 {
     /**
      * Initializes the server and loads the given configurations.
-     * @param {DEDA.ProxyServer.App} app - A reference to the application.
      * @param {DEDA.ProxyServer.Server.Config} config - The configuration to use.
+     * @param {DEDA.ProxyServer.App} app - A reference to the application.
      */
-    constructor(app, config)
+    constructor(config, app)
     {
         // Call the super constructor.
-        super(app, config);
+        super(config, app);
 
         /**
          * The node HTTP server.
@@ -136,7 +136,7 @@ class HTTP extends Component
         this.server = (config.encrypted ? https.createServer(config, this.handler) : http.createServer(config, this.handler) );
 
         // listen to the port.
-        this.server.listen(config.port, config.host, ()=>this.app.log(`SERVER-START - listening on  ${config.host}:${config.port}!`) );
+        this.server.listen(config.port, config.host, ()=>console.log(`SERVER-START - listening on  ${config.host}:${config.port}!`) );
 
 
         // If there is already a watcher then close it.
@@ -152,7 +152,7 @@ class HTTP extends Component
                 if (eventType !== "change") return;
 
                 // Log the event.
-                this.app.log(`SERVER-KEY-CHANG - crypto-keys has changed. Restarting server in ${config.watchRestartDelay}ms`);
+                console.log(`SERVER-KEY-CHANG - crypto-keys has changed. Restarting server in ${config.watchRestartDelay}ms`);
 
                 // Stop the server, when it stops, restart it. Wait about x ms before starting the server. This will give enough time for any other file to be updated as well.
                 setTimeout( ()=>this.server.close(()=>this.start()), config.watchRestartDelay);
@@ -164,8 +164,6 @@ class HTTP extends Component
 
     /**
      * The HTTP request handler interface. This is called by the http server when a request is received.
-     * HTTP servers use the `this.app.onRequest()` to link to this method. This method contains all the logic
-     * for handling HTTP requests.
      * 
      * @param {http.ClientRequest} request - The http client request. See {@link https://nodejs.org/docs/latest/api/http.html#class-httpclientrequest|http.ClientRequest}
      * @param {http.ServerResponse} response - The http server response. See {@link https://nodejs.org/docs/latest/api/http.html#class-httpserverresponse|http.ServerResponse}

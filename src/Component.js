@@ -38,7 +38,7 @@ class Component
      * @param {object} app - A reference to the parent application.
      * @param {object} config - The configuration to use.
      */
-    constructor(app, config)
+    constructor(config, app)
     {
         /**
          * A reference to the main parent application class used as a shared global class for methods/components/etc.
@@ -161,7 +161,7 @@ class Component
             // Find the registered server this config. This throws an exception if not found.
             const ComponentClass = this.findComponent(config.namespace);
             // Create the component instance form the class and load it.
-            const component = new ComponentClass(app, config);
+            const component = new ComponentClass(config, app);
 
             // Add the component to the list of components.
             components.push(component);
@@ -184,6 +184,25 @@ class Component
 
         // Return the global list of components.
         return components;
+    }
+
+    /**
+     * Selects the correct configuration based on the current environment variables and weather this is 
+     * the primary process or not.
+     * 
+     * The set `process.env.appName` takes priority and returns the config if it exists.
+     * Otherwise if this the primary process then returns `cluster` config if it is enabled, otherwise returns `app` config.
+     * 
+     * @returns {object} - The appropriate configurations.
+     */
+    static selectConfig(config)
+    {
+        // Priority is to check if the process environment has a `appName`, then check `config.appName`, finally use the default `app`
+        const appName = (process && process?.env.appName ? process.env.appName : (config.appName ? config.appName : "app"));
+
+        // If it exists within the config then return it.
+        if (config.hasOwnProperty(appName)) return config[appName];
+        else throw new Error(`COMPONENT-CONFIG can not find selected config ${appName}`);
     }
 }
 
