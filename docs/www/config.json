@@ -125,14 +125,14 @@
                     "headers": { "x-forwarded-for": "${request.socket.remoteAddress}" },
 
                     "balancer": {
-                        "namespace": "Balancer.RoundRobin"
-                    },
+                        "namespace": "Balancer.RoundRobin",
 
-                    "upstream": [
-                        {"server": "https://lcchomes.com/", "down": false},
-                        {"server": "https://deda.ca/"     , "down": false},
-                        {"server": "https://test.deda.ca/", "down": false}
-                    ]
+                        "upstream": [
+                            {"server": "https://lcchomes.com/", "down": false},
+                            {"server": "https://deda.ca/"     , "down": false},
+                            {"server": "https://test.deda.ca/", "down": false}
+                        ]
+                    }
                 },
                 {
                     "namespace": "Proxy.FileServe",

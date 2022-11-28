@@ -154,7 +154,7 @@ class Cluster extends Component
             process.on("message", message=>this.onMessage(message, process));
         }
         // If clustering is enabled and this is the primary process then create the sub processes.
-        else if (this.config.enable)
+        else
         {
             // Listen to cluster active and exist events.
             cluster.on("online", worker=>worker.on("message", message=>this.onMessage(message, worker)));
