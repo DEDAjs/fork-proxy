@@ -10,6 +10,8 @@ module.exports = {
     Component   : require("./src/Component.js"),
     Cluster     : require("./src/Cluster.js"),
 
+    // API : require("./src/API.js")    // Future implementation
+
     Logger: {
         Logger: require("./src/Logger/Logger.js")
     },
@@ -30,10 +32,16 @@ module.exports = {
     },
 
     Server: {
-        HTTP: require("./src/Server/HTTP.js")
-        // TCP : require("./src/Server/TCP.js"),   // Future implementation
-        // UDP : require("./src/Server/UDP.js"),   // Future implementation
-        // SMTP: require("./src/Server/SMTP")      // Future implementation
+        HttpServer: require("./src/Server/HttpServer.js")
+        // TcpServer  : require("./src/Server/TcpServer.js"),   // Future implementation
+        // UdpServer  : require("./src/Server/UdpServer.js"),   // Future implementation
+        // SmtpServer : require("./src/Server/SmtpServer")      // Future implementation
+        // ImapServer : require("./src/Server/ImapServer")      // Future implementation
+        // Pop3Server : require("./src/Server/Pop3Server")      // Future implementation
+    },
+
+    Balancer: {
+        RoundRobin: require("./src/Balancer/RoundRobin.js")
     },
 
     Proxy: {
@@ -41,14 +49,12 @@ module.exports = {
         FileServe   : require("./src/Proxy/FileServe.js"),
         Redirect    : require("./src/Proxy/Redirect.js"),
 
-        HTTP        : require("./src/Proxy/HTTP.js"),
-        // TCP     : require("./src/Proxy/TCP.js"),   // Future implementation
-        // UDP     : require("./src/Proxy/UDP.js"),   // Future implementation
-        // SMTP    : require("./src/Proxy/SMTP.js")   // Future implementation
-    },
-
-    Balancer: {
-        RoundRobin: require("./src/Balancer/RoundRobin.js")
+        HttpProxy   : require("./src/Proxy/HttpProxy.js"),
+        // TcpProxy  : require("./src/Proxy/TcpProxy.js"),   // Future implementation
+        // UdpProxy  : require("./src/Proxy/UdpProxy.js"),   // Future implementation
+        // SmtpProxy : require("./src/Proxy/SmtpProxy.js")   // Future implementation
+        // ImapProxy : require("./src/Proxy/ImapProxy.js")   // Future implementation
+        // Pop3Proxy : require("./src/Proxy/Pop3Proxy.js")   // Future implementation
     },
 
     namespace: "DEDA.ProxyServer"

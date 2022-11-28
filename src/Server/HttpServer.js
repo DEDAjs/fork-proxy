@@ -23,7 +23,7 @@ const Utility = require("../Utility.js");
  * @memberof DEDA.ProxyServer.Server
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class HTTP extends Component 
+class HttpServer extends Component 
 {
     /**
      * Initializes the server and loads the given configurations.
@@ -219,5 +219,5 @@ class HTTP extends Component
 }
 
 // Register this implementation with the application. Export the class
-module.exports = HTTP.registerComponent();
+module.exports = HttpServer.registerComponent();
 };

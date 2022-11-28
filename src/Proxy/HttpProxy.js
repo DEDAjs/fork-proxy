@@ -25,7 +25,7 @@ const Utility = require("../Utility.js");
  * @memberof DEDA.ProxyServer.Proxy
  * @author Charbel Choueiri <charbel.choueiri@gmail.com>
  */
-class HTTP extends Route
+class HttpProxy extends Route
 {
     /**
      * The unique type of this component used by the application configuration loader.
@@ -124,5 +124,5 @@ class HTTP extends Route
 
 
 // Register this implementation with the application. Export the class
-module.exports = HTTP.registerComponent();
+module.exports = HttpProxy.registerComponent();
 };
