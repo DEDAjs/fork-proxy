@@ -3,6 +3,10 @@
         "hostname": "dev02.deda.ca"
     },
 
+    "modules": [
+        ""
+    ],
+
     "appName": "cluster",
 
     "cluster": [

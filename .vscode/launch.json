@@ -11,7 +11,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "args": ["./docs/www/config.json"],
+            "args": ["./docs/www/config.json", "../../dev-ops/proxy.json"],
             "program": "${workspaceFolder}/main.js"
         },
         {

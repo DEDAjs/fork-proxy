@@ -60,6 +60,8 @@ class FileServe extends Route
             immutable: true,
             maxAge: 60 * 60 * 1000, // ms
             eTag: true
+
+            // TODO: Add headers
         });
     }
 
@@ -76,6 +78,9 @@ class FileServe extends Route
 
         // There must be a root.
         if (!config.root || typeof(config.root) !== "string") throw new Error(`SERVE-CONFIG - root must exist and be a valid string/path: ${config.root}`);
+
+        // Make sure "index" is either false or a string.
+        if (config.index !== false && typeof(config.index) !== "string") throw new Error(`SERVE-CONFIG - index must be 'false' or name of index file i.e 'index.html': ${config.index}`);
 
         // Replace any variables and resolve the path. If it does not exist then throw exception
         config.root = path.resolve(config.root);
@@ -222,7 +227,8 @@ class FileServe extends Route
         const response = context.response;
 
         // If cache control is enabled then add the information.
-        if (config.cacheControl) response.setHeader("Cache-Control", `public, max-age=${Math.floor(config.maxAge / 1000)}${config.immutable ? ", immutable" : ''}`);
+        if (config.cacheControl === true) response.setHeader("Cache-Control", `public, max-age=${Math.floor(config.maxAge / 1000)}${config.immutable ? ", immutable" : ''}`);
+        else if (typeof(config.cacheControl) === "string") response.setHeader("Cache-Control", config.cacheControl);
 
         // If we are to send the last modified date then send it.
         if (config.lastModified) response.setHeader("Last-Modified", stat.mtime.toUTCString());
@@ -311,8 +317,7 @@ class FileServe extends Route
      */
     isModified(context)
     {
-        console.log("not modified");
-
+        // @TODO: Add debugging flag and show information
         // fields
         const noneMatch = context.request.headers["if-none-match"];
         const modifiedSince = context.request.headers["if-modified-since"];

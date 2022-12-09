@@ -42,7 +42,9 @@ class Redirect extends Route
             url: undefined,
             statusCode: 307,
             statusMessage: undefined,
-            body: "${redirect.statusMessage}. Redirecting to ${redirect.url}"
+            body: "${redirect.statusMessage}. Redirecting to ${redirect.url}",
+
+            // TODO: Add headers
         });
     }
 

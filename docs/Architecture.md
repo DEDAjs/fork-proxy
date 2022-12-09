@@ -154,3 +154,19 @@ Other helper and supporting files:
 - **Status.json** - A list of HTTP status codes and their messages used by `Serve.js` to serve static files.
 - **Utility.js** - Provides static common helper methods.
 - **Tools.js** - CLI tools to update `Mime.json` and `Status.json` files.
+
+
+# Docker
+
+> docker build -t deda-proxy-server:0.1 .
+
+-v ~/proxy:/data:rw \
+-v '/home/ueiricho/proxy':'/data':'rw' \
+
+
+> docker run -d     \
+--name proxy        \
+-p 8080:80          \
+-p 4443:443         \
+-v proxy:'/data':'rw' \
+deda-proxy-server:0.1

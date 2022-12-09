@@ -41,7 +41,9 @@ class HttpProxy extends Route
     {
         return Object.assign(super.getDefaultConfigs(), {
             sticky: false,  // NOT IMPLEMENTED YET!
-            server: null    // string
+            server: null    // string,
+
+            // TODO: Add headers
         });
     }
 
@@ -58,6 +60,9 @@ class HttpProxy extends Route
         if (!this.balancer)
         {
             if (!this.config.server || typeof(this.config.server) !== "string") throw new Error(`PROXY-HTTP-CONFIG missing a valid upstream 'server' since no balancer is specified.`);
+
+            // Convert the string to an object container.
+            this.config.server = {server: this.config.server};
         }
     }
 
@@ -79,17 +84,20 @@ class HttpProxy extends Route
         proxyUrl = URL.parse(proxyUrl);
         if (!proxyUrl.port) proxyUrl.port = (proxyUrl.protocol === "https:" ? 443 : 80);
 
+        // @TODO: Merge the path from the original URL to this one according to the configs.
+        proxyUrl.path = context.url.path; // Remove context.path.pathname
+
         // Get the IP of the remote client address.
         const remoteIp =  request.headers["x-forwarded-for"] || request.socket.remoteAddress;
 
         // Build the target request options object. This includes recreating the header and setting
         const options = {
             protocol: proxyUrl.protocol,
-            host    : proxyUrl.host,
+            host    : proxyUrl.hostname,
             port    : proxyUrl.port,
             path    : proxyUrl.path,
             method  : request.method,
-            headers : Object.assign({}, request.headers, {host: proxyUrl.host, "x-forwarded-for": remoteIp}),
+            headers : Object.assign({}, request.headers, {"x-forwarded-for": remoteIp}),  // host: proxyUrl.host
             setHost : false,
             rejectUnauthorized: false
         };
