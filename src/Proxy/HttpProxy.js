@@ -1,14 +1,12 @@
-const Component = require("../Component.js");
-
 {
 /**
  * Copyright Notice: This file is subject to the terms and conditions defined in file https://deda.ca/LICENSE-CODE.txt
  */
 "use strict";
 
-const URL = require("url");
-const http = require("http");
-const https = require("https");
+const URL = require("node:url");
+const http = require("node:http");
+const https = require("node:https");
 
 const Route = require("./Route.js");
 const Utility = require("../Utility.js");
@@ -102,11 +100,25 @@ class HttpProxy extends Route
             rejectUnauthorized: false
         };
 
+        try {
+            // @todo only upgrade if options specifies that it is supported
+            if (context.upgrade) this.socketProxy(context, options, upstream);
+            else this.httpProxy(context, options, upstream);
+        } catch (error) {
+            console.log(`Error connecting to target: `, error);
+        }
+
+    }
+
+    httpProxy(context, options, upstream)
+    {
+        let {request, response} = context;
+
         // Based on the protocol then get the https or http.
-        const protocol = (proxyUrl.protocol === "https:" ? https : http);
+        const protocol = (options.protocol === "https:" ? https : http);
 
         // Create the HTTP/S request passing the options and waiting for a response.
-        const targetRequest = protocol.request(options, targetResponse=>{
+        const upstreamRequest = protocol.request(options, targetResponse=>{
 
             // Proxy/forward the response to the initial request.
             response.writeHeader(targetResponse.statusCode, targetResponse.headers);
@@ -116,17 +128,56 @@ class HttpProxy extends Route
         });
 
         // Listen to errors to report to client and update stats.
-        targetRequest.on("error", error=>{
+        upstreamRequest.on("error", error=>{
+
+            // Report error.
+            console.error(`PROXY-REQUEST-ERROR upstream server error: ${upstream.server}`, error);
 
             // Send a server error to the client.
             if (!response.headersSent) Utility.httpError(context.response, 503);
-
-            // Report error.
-            console.error(`PROXY-REQUEST-ERROR upstream server error: ${upstream.server}`);
         });
 
         // Pipe the request to the response.
-        request.pipe(targetRequest, {end: true});
+        request.pipe(upstreamRequest, {end: true});
+    }
+
+    socketProxy(context, options, upstream)
+    {
+        // Based on the protocol then get the https or http.
+        const protocol = (options.protocol === "https:" ? https : http);
+
+        // Create the HTTP/S request passing the options which also contains the upgrade request.
+        const upstreamRequest = protocol.request(options);
+        upstreamRequest.end();
+
+        // Listen to errors to report to client and update stats.
+        upstreamRequest.on("error", error=>{
+            // Report error.
+            console.error(`PROXY-REQUEST-ERROR upstream server error: ${upstream.server}`, error);
+            context.socket.end();
+        });
+
+        // Listen to the target upgrade handshake
+        upstreamRequest.on("upgrade", (upstreamRequest, upstreamSocket, upgradeHead)=>{
+
+            // Rebuild the response header from the upstream request to send to back to the request client.
+            const header = [`HTTP/${upstreamRequest.httpVersion} ${upstreamRequest.statusCode} ${upstreamRequest.statusMessage}`];
+            for (let name in upstreamRequest.headers) header.push(`${name}: ${upstreamRequest.headers[name]}`)
+            header.push("\r\n");
+
+            // Write the header to the client.
+            context.socket.write(header.join("\r\n"));
+            //context.socket.write(upgradeHead);
+
+            // If client socket ends then disconnect the target socket as well.
+            context.socket.on("end", ()=>upstreamSocket.end());
+            context.socket.on("error", ()=>upstreamSocket.end());
+            upstreamSocket.on("error", ()=>context.socket.end());
+
+            // Pipe the sockets together.
+            context.socket.pipe(upstreamSocket);
+            upstreamSocket.pipe(context.socket);
+        });
     }
 }
 

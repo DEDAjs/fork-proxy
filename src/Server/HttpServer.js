@@ -64,6 +64,15 @@ class HttpServer extends Component
          * @returns 
          */
         this.handler = (request, response)=>this.onRequest(request, response);
+
+        /**
+         * The protocol upgrade request handler. This is typically used for websocket proxy or any other HTTP upgradable protocol.
+         * @param {http.ClientRequest} request -
+         * @param {http.ServerResponse} response - 
+         * @see [https://nodejs.org/api/http.html#event-upgrade_1](http.on("upgrade"))
+         * @returns 
+         */
+        this.upgradeHandler = (request, socket, head)=>this.onRequest(request, socket, head, true);
     }
 
 
@@ -86,7 +95,8 @@ class HttpServer extends Component
             key: undefined,
             cert: undefined,
             watch: true,
-            watchRestartDelay: 10*1000
+            watchRestartDelay: 10*1000,
+            proxyWebSocket: true
         });
     }
 
@@ -135,9 +145,11 @@ class HttpServer extends Component
         // Create the server.
         this.server = (config.encrypted ? https.createServer(config, this.handler) : http.createServer(config, this.handler) );
 
+        // If websocket is enabled then listen to websocket upgrades.
+        if (config.proxyWebSocket) this.server.on("upgrade", this.upgradeHandler);
+
         // listen to the port.
         this.server.listen(config.port, config.host, ()=>console.log(`SERVER-START - listening on  ${config.host}:${config.port}!`) );
-
 
         // If there is already a watcher then close it.
         if (this.watcher) this.watcher.close();
@@ -167,8 +179,10 @@ class HttpServer extends Component
      * 
      * @param {http.ClientRequest} request - The http client request. See {@link https://nodejs.org/docs/latest/api/http.html#class-httpclientrequest|http.ClientRequest}
      * @param {http.ServerResponse} response - The http server response. See {@link https://nodejs.org/docs/latest/api/http.html#class-httpserverresponse|http.ServerResponse}
+     * @param {buffer} [head = null] - 
+     * @param {boolean} [upgrade = false]- Indicates if the connection has been upgraded (web-socket support)
      */
-    async onRequest(request, response)
+    async onRequest(request, response, head = null, upgrade = false)
     {
         // Parse the URL.
         const url = Utility.parseUrl(request);
@@ -180,7 +194,7 @@ class HttpServer extends Component
         if (!route) return response.end();
 
         // Create the context that will be used for processing this request.
-        const context = {request, response, url, route, match, process, token: null};
+        const context = {request, response, url, route, match, process, token: null, socket: response, head, upgrade};
 
         // Check for rate-limit
         if (route.rateLimit && await route.rateLimit.decrement(context)) return;
