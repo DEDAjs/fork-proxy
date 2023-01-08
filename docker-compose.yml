@@ -1,0 +1,12 @@
+---
+version: "3.8"
+
+services:
+  deda-ps:
+    build: .
+    volumes:
+      - ./docs/www1/:/data
+    ports:
+      - 8080:8080
+      - 4443:4443
+    command: node main.js -c /data
