@@ -1,13 +1,14 @@
-FROM node:18.12.1-slim
+FROM node:18.12.1-alpine
 
 LABEL Author="Charbel Choueiri <charbel.choueiri@gmail.com>"
 
-RUN mkdir -p /home/app
+COPY . /home/node/app
+RUN chown -R node:node /home/node/app
 
-COPY . /home/app
+RUN mkdir /home/node/config
+RUN chown -R node:node /home/node/config
 
-EXPOSE 8080
-EXPOSE 4443
+USER node
+WORKDIR /home/node/app
+CMD ["node", "main.js", "-c", "/home/node/config"]
 
-WORKDIR /home/app
-CMD ["node", "main.js", "-c", "/data/"]

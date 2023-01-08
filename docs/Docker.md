@@ -39,11 +39,14 @@ Here are some helpful commands
 
 Run the image and helpful commands
 
-    $ docker run          \
-        --name deda-ps      \
-        -p 8080:80          \
-        -p 4443:443         \
-        -v $HOME/deda-v3/proxy-server/server/docs/www1/:/data \
+    $ docker run -d          \
+        --name='deda-ps'     \
+        -p '8080:8080/tcp'     \
+        -p '4443:4443/tcp'    \
+        -u $(id -u):$(id -g) \
+        -e 'UID'='1000'      \
+        -e 'GID'='1000'      \
+        -v $HOME/deda-v3/proxy-server/server/docs/www1/:'/home/dedaca/site':'rw' \
         dedaca/proxy-server
     $ docker ps
     $ docker logs -f deda-ps

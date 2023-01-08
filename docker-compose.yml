@@ -4,9 +4,13 @@ version: "3.8"
 services:
   deda-ps:
     build: .
+    user: node:node
+    environment:
+      - CONFIG_ROOT=/home/node/config
+      - UID=1000
+      - GID=1000
     volumes:
-      - ./docs/www1/:/data
+      - /home/ueiricho/Documents/deda-ps-config:/home/node/config:rw
     ports:
       - 8080:8080
       - 4443:4443
-    command: node main.js -c /data
