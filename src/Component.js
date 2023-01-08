@@ -198,7 +198,7 @@ class Component
     static selectConfig(config)
     {
         // Priority is to check if the process environment has a `appName`, then check `config.appName`, finally use the default `app`
-        const appName = (process && process?.env.appName ? process.env.appName : (config.appName ? config.appName : "app"));
+        const appName = (process && process?.env.run ? process.env.run : (config.run ? config.run : "app"));
 
         // If it exists within the config then return it.
         if (config.hasOwnProperty(appName)) return config[appName];

@@ -165,14 +165,14 @@ class Cluster extends Component
                 console.log(`CLUSTER-WORKER-DIED - Worker ${worker.__name}/${worker.id} died with code: ${code}, and signal: ${signal}`);
 
                 // Fork again after a delay. Make sure to add the worker name to the new worker so we can send messages to it using the name.
-                setTimeout( ()=>{ cluster.fork({appName: deadWorker.__name}).__name = worker.__name}, this.config.workerDelayRestart);
+                setTimeout( ()=>{ cluster.fork({run: deadWorker.__name}).__name = worker.__name}, this.config.workerDelayRestart);
             });
 
             // Traverse the worker definitions and create them based using the configs.
             for (let workerConfig of this.config.workers)
             {
                 // Loop the number of workers we need to create and create them.
-                for (let count = 0; count < workerConfig.count; count++) cluster.fork({appName: workerConfig.name}).__name = workerConfig.name;
+                for (let count = 0; count < workerConfig.count; count++) cluster.fork({run: workerConfig.name}).__name = workerConfig.name;
             }
         }
     }
