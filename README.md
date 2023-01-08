@@ -1,17 +1,19 @@
 
 # DEDA Proxy Server
 
-A fully featured, clustered, light-weight, modularized Proxy-Server with no dependencies (Node replacement for Nginx). Fully configured using JSON file(s). Plug-in architecture for easy expandability.
+Fully featured Nodejs Proxy-Server with no dependencies (NGINX replacement)
+
+A fully featured Nodejs, clustered, light-weight, modularized Proxy-Server with no dependencies (Node replacement for Nginx). Fully configured using JSON file(s). Plug-in architecture for easy expandability.
 
 # Features: 
 
 * **Cluster** - Supports multi-threading with thread safe logging and shared-memory.
-* **Logger** - Customizable HTTP access logging with full `file-rotation` support.
+* **Logger** - Customizable HTTP access logging with `file-rotation` support.
 * **Rate Limiter** - Rate limit requests to mitigate against DOS attaches.
-* **HTTP(S) Server** - Listen to multiple HTTP and/or HTTPS ports with SSL support that is auto-reload when encryption keys renewals.
-* **Proxy** - Proxy requests to upstream servers with `load balancing` support.
+* **HTTP(S) Server** - Listen to multiple HTTP and/or HTTPS ports with SSL support that is auto-reload when encryption keys are renewed.
+* **Proxy** - Proxy requests to upstream servers with `load balancing` support and `web-socket` proxy support.
 * **File Server** - Serve static files (html, js, css, etc) with `browser side` and server side `file caching` support.
-* **Redirect** - Redirect to a different URL using in string variables.
+* **Redirect** - Redirect to a different URL using string variables.
 
 # Philosophy
 
@@ -52,6 +54,19 @@ For a full example config file see [ConfigExample.md](./docs/ConfigExample.md).
 
 For a Simple example configuration file see [ConfigExampleSimple.md](./docs/ConfigExmapleSimple.md).
 
+The application takes in a folder that contains all the configuration files and folders. The root folder contains
+the `config.json` file the contains the initial application configurations. `config.json` can then point to other
+files as your specific structure or config require. If No configuration are found within the given folder or
+if the folder does not exist then the default folder structure is created and a default config is used.
+
+* Root Folder
+    * html : contains the www root files.
+    * logs : contains log files
+    * ssl  : contains the certificate files
+    * config.json - The main config files.
+
+Any included configurations can be placed in the root folder. Off course this can be completely changes based on the `config.json` file.
+
 
 ## General Properties
 
@@ -77,7 +92,7 @@ The following is a list of implemented components that can be used within the `c
 
 # Servers
 
-A server component is a component that listens to incoming requests from clients and pass them to matched handlers.Currently on HTTP server component is implemented. Future components can include TCP, UDP and SMTP servers.
+A server component is a component that listens to incoming requests from clients and pass them to matched handlers.Currently one HTTP server component is implemented. Future components can include TCP, UDP and SMTP servers.
 
 ## Server.HTTP
 
@@ -92,7 +107,7 @@ A server component is a component that listens to incoming requests from clients
 
 # Route
 
-Routes are similar to ExpressJs route that uses the incoming request URL and method to match and redirect requests to different handlers. There are 3 different components that can handle HTTP requests. Redirect, FileServe, and HttpProxy. 
+Routes are similar to ExpressJs route that uses the incoming request URL and method to match and redirect requests to different handlers. There are 3 different components that can handle HTTP requests. `Redirect`, `FileServe`, and `HttpProxy`. 
 
 All routes can use the `Component` properties and the following:
 
