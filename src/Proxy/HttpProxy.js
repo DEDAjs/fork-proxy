@@ -16,6 +16,8 @@ const Utility = require("../Utility.js");
  * This proxy can inject new headers to the request for the upstream server but as of his 
  * version does not do http header injection for the incoming response connection.
  * 
+ * Web-Sockets proxy is fully supported.
+ * 
  * The proxy can load any registered load-balancers and uses to balancer between upstream servers.
  * See the different Balancer implementations.
  * 

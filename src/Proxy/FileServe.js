@@ -19,6 +19,7 @@ const Status = require("../Common/Status.json");
  *  - Supports ETag and Max-Age
  *  - Caching is done using the file system and directly within this class.
  *  - Directory listing is not supported within the proxy server.
+ *  - A the moment file download resume is not supported.
  *  
  * 
  * @class
