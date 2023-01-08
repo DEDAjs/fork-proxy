@@ -1,8 +1,13 @@
+const { appendFileSync } = require("node:fs");
+
 {
 /**
  * Copyright Notice: This file is subject to the terms and conditions defined in file https://deda.ca/LICENSE-CODE.txt
  */
 "use strict";
+
+const fs = require("node:fs");
+const path = require("node:path");
 
 const url = require("url");
 const Status = require("./Common/Status.json");
@@ -195,6 +200,91 @@ class Utility
     }
 
     /**
+     * Converts an array of arguments into an object.
+     * 
+     * @param {string[]} args - A list of command line arguments commands to parse.
+     * @param {object} options - The options to use.
+     * @param {string} [options.prefix = '-'] - Specifies the prefix of commands.
+     * 
+     * @returns {object} - The parsed object version of the command/value structure.
+     */
+    static readCLIArgs(args, options)
+    {
+        // If no arguments are given then use the process args.
+        if (!args && process) args = process.argv;
+        if (!Array.isArray(args)) return {};
+
+        // Set the default missing options properties.
+        options = Object.assign({prefix: '-'}, options);
+
+        // Create the object that will hold all the parsed arguments structure.
+        const commands = {};
+
+        // Process the command arguments.
+        for (let index = 0; index < args.length; )
+        {
+            // Read the next command. If the argument does not start with '-' then skip it.
+            let command = args[index++];
+            if (!command.startsWith(options.prefix)) continue;
+
+            // Remove the prefix from the command.
+            command = command.substring(options.prefix.length);
+
+            // Start with the default value.
+            let value = true;
+
+            // If the next argument is not a command then it is a value, read it and parse it.
+            if (index < args.length && !args[index].startsWith(options.prefix)) value = this.parseValue(args[index++]);
+
+            // If the command already exists then convert to an array or object based on the type of the value.
+            if (commands.hasOwnProperty(command))
+            {
+                // Get the current command value.
+                const currentValue = commands[command];
+
+                // If the value is an object then assume all of this command values are object and assign it to the current value.
+                if (typeof(value) === "object" && typeof(currentValue) === "object" && !Array.isArray(currentValue)) Object.assign(currentValue, value);
+                // If the current value is already an array then push the new value onto the array.
+                else if (Array.isArray(currentValue)) currentValue.push(value);
+                // Otherwise convert command to and array and push both values onto it.
+                else commands[command] = [ currentValue, value ];
+            }
+            // Otherwise set the value within the class args.
+            else commands[command] = value;
+        }
+
+        // Return the build command list.
+        return commands;
+    }
+
+    /**
+     * Checks if the value is a string, number, or boolean. Parses it and returns the correct type.
+     * @param {string} value - The value to parse.
+     * @returns {any} - The value type based.
+     */
+    static parseValue(value)
+    {
+        // if starts and ends with quotes then it is a string, remove the quotes.
+        if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) value = value.substring(1, value.length - 1);
+        // If value is a boolean then convert it to a boolean.
+        else if (value.toLowerCase() === "true" || value.toLowerCase() === "false") value = (value.toLowerCase() === "true");
+        // If the value is a key=value type then convert it to an object.
+        else if (value.length >= 3 && value.indexOf("=") > 0)
+        {
+            const keyValue = value.trim().split('=');
+            value = {};
+            value[keyValue[0].trim()] = this.parseValue(keyValue[1].trim());
+        }
+        // If the value is a number then convert it to a number.
+        else if (!Number.isNaN(Number.parseFloat(value))) value = Number.parseFloat(value);
+
+        // Return the parsed value.
+        return value;
+    }
+
+
+
+    /**
      * Creates a date formatted string. 
      * 
      * @param {Date} [date] - A date object to convert to string.
@@ -313,6 +403,75 @@ class Utility
         response.setHeader('Content-Security-Policy', "default-src 'none'");
         response.setHeader('X-Content-Type-Options', 'nosniff');
         response.end(body);
+    }
+
+    static copyDefaultConfig(configRoot, defaultRoot = "../docs/www")
+    {
+        try {
+            // Get the root path of the default config directory.
+            defaultRoot = path.resolve(__dirname, defaultRoot);
+
+            // Make sure the root directory exists.
+            fs.mkdirSync(configRoot, {recursive:true});
+            // Copy over to the directory the default config to use.
+            fs.cpSync(defaultRoot, configRoot, {recursive: true});
+        } catch (error) {
+            console.error("Error: unable to create config directory", error);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Initializes the working directory at the given path. If the config file already Exists then returns
+     * it otherwise creates a default one and returns it.  This is used when running in a docker container 
+     * where no files are provided upon initialization.
+     * 
+     * @param {string} configRoot - the path to a config directory.
+     * @param {object} - Returns the loaded or created config file
+     */
+    static loadConfig(configRoot = null, defaultRoot = "../docs/www")
+    {
+        let config, configPath;
+
+        // Process the command line arguments.
+        const args = this.readCLIArgs(process.argv);
+
+        // If no config path is given then load it form the command line arguments.
+        if (!configRoot) configRoot = args.c
+
+        // If still no config root then return error.
+        if (!configRoot) return console.error("Error: Missing config file path command line parameter.\r\nExample: node main.js -c ./data/");
+
+        // If the path does not exist then try to create it.
+        configRoot = path.resolve(configRoot);
+        if (!fs.existsSync(configRoot) && !this.copyDefaultConfig(configRoot, defaultRoot)) return;
+
+        // If the path is a file then load it.
+        const rootState = fs.statSync(configRoot);
+        if (!rootState.isDirectory()) return console.error("Error: root config must be a directory.");
+
+        try {
+            // Load the file
+            configPath = path.join(configRoot, "config.js");
+            // If the file does not exist then create it.
+            if (!fs.existsSync(configPath) && !this.copyDefaultConfig(configRoot, defaultRoot)) return;
+            // Load the configuration.
+            config = require(configPath);
+        } catch (error) {
+            return console.error(`Error: unable to read config file '${configPath}'`, error);
+        }
+
+        // Process the environment variables.
+        if (!config.env) config.env = {};
+        if (!config.env.cwd) config.env.cwd = process.cwd();
+
+        // Replace all the references.
+        Utility.replaceRefs(config, config);
+
+        // Return the loaded config file.
+        return config;
     }
 }
 
