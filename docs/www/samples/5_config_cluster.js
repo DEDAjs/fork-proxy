@@ -1,15 +1,15 @@
-{
-    "env": {
+module.exports = {
+    env: {
         "hostname": "dev02.deda.ca"
     },
 
-    "modules": [
+    modules: [
         ""
     ],
 
-    "appName": "cluster",
+    appName: "cluster",
 
-    "cluster": [
+    cluster: [
         {
             "namespace": "Cluster",
             "enableCluster": true,
@@ -37,7 +37,7 @@
         }
     ],
 
-    "logger": [
+    logger: [
         {
             "namespace": "Cluster",
             "enableUncaughtException": true
@@ -52,7 +52,7 @@
         }
     ],
 
-    "app": 
+    app: 
     [
         {
             "namespace": "Cluster",
@@ -123,7 +123,6 @@
                 },
                 {
                     "namespace": "Proxy.HTTP",
-                    "desc": "Proxy to justwash.ca",
 
                     "match": { "pathname": "//^/app/deda/"},
                     "headers": { "x-forwarded-for": "${request.socket.remoteAddress}" },
@@ -132,7 +131,6 @@
                         "namespace": "Balancer.RoundRobin",
 
                         "upstream": [
-                            {"server": "https://lcchomes.com/", "down": false},
                             {"server": "https://deda.ca/"     , "down": false},
                             {"server": "https://test.deda.ca/", "down": false}
                         ]
@@ -154,4 +152,4 @@
             ]
         }
     ]
-}
+};
