@@ -19,7 +19,7 @@ module.exports = {
             desc: "The main Website",
             index: "index.html",
 
-            root: "${env.cwd}/docs/www/html/"
+            root: "${env.CONFIG_ROOT}/html/"
         }
     ]
 }

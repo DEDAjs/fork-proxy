@@ -408,6 +408,8 @@ class Utility
     static copyDefaultConfig(configRoot, defaultRoot = "../docs/www")
     {
         try {
+            console.log(`Copying default configuration to: ${configRoot}`);
+
             // Get the root path of the default config directory.
             defaultRoot = path.resolve(__dirname, defaultRoot);
 
@@ -438,7 +440,11 @@ class Utility
         // Process the command line arguments.
         const args = this.readCLIArgs(process.argv);
 
+        console.log("Reading command line arguments: ", args);
+
         // If no config path is given then load it form the command line arguments.
+        if (!configRoot && process.env.CONFIG_ROOT) configRoot = process.env.CONFIG_ROOT;
+        if (!configRoot && args.e && args.e.CONFIG_ROOT) configRoot = args.e.CONFIG_ROOT;
         if (!configRoot) configRoot = args.c
 
         // If still no config root then return error.
@@ -457,6 +463,9 @@ class Utility
             configPath = path.join(configRoot, "config.js");
             // If the file does not exist then create it.
             if (!fs.existsSync(configPath) && !this.copyDefaultConfig(configRoot, defaultRoot)) return;
+
+            console.log(`Loading configuration from: ${configPath}`);
+
             // Load the configuration.
             config = require(configPath);
         } catch (error) {
@@ -466,6 +475,15 @@ class Utility
         // Process the environment variables.
         if (!config.env) config.env = {};
         if (!config.env.cwd) config.env.cwd = process.cwd();
+
+        // Copy the CONFIG_ROOT from process.env
+        if (process.env.CONFIG_ROOT) config.env.CONFIG_ROOT = process.env.CONFIG_ROOT;
+
+        // Copy the -e from command line to the env variable.
+        if (args.e) Object.assign(config.env, args.e);
+
+        // The config root environment variable is not there then add it.
+        if (!config.env.CONFIG_ROOT) config.env.CONFIG_ROOT = configRoot;
 
         // Replace all the references.
         Utility.replaceRefs(config, config);
