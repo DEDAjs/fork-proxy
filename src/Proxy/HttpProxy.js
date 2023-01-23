@@ -88,7 +88,12 @@ class HttpProxy extends Route
         proxyUrl.path = context.url.path; // Remove context.path.pathname
 
         // Get the IP of the remote client address.
-        const remoteIp =  request.headers["x-forwarded-for"] || request.socket.remoteAddress;
+
+// @security - a client can easily add x-forwarded-for header. If the remote is a private address then trust the x-forwarded-for
+// @todo - the server must know if there is an upstream proxy server or not.
+// @todo - Add support for IP-V6
+
+        const remoteIp = (Utility.isPrivateIP(request.socket.remoteAddress.toString()) ? request.headers["x-forwarded-for"] || request.socket.remoteAddress : request.socket.remoteAddress);
 
         // Build the target request options object. This includes recreating the header and setting
         const options = {

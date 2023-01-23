@@ -87,6 +87,20 @@ class Utility
     }
 
     /**
+     * Checks if the given IP address is a private IP or not.
+     * 
+     * @param {string} ip - the IP address.
+     * @returns {boolean} - true if private, false otherwise.
+     */
+    static isPrivateIP(ip)
+    {
+        var parts = ip.split('.');
+        return parts[0] === '10' || 
+           (parts[0] === '172' && (parseInt(parts[1], 10) >= 16 && parseInt(parts[1], 10) <= 31)) || 
+           (parts[0] === '192' && parts[1] === '168');
+    }
+
+    /**
      * Finds and replaces all references within the given value to the references found within the given
      * refs object.
      * 
