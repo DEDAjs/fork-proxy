@@ -92,6 +92,7 @@ class HttpProxy extends Route
 // @security - a client can easily add x-forwarded-for header. If the remote is a private address then trust the x-forwarded-for
 // @todo - the server must know if there is an upstream proxy server or not.
 // @todo - Add support for IP-V6
+// @todo - Support multiple IP address proxy for x-forwarded-for
 
         const remoteIp = (Utility.isPrivateIP(request.socket.remoteAddress.toString()) ? request.headers["x-forwarded-for"] || request.socket.remoteAddress : request.socket.remoteAddress);
 
