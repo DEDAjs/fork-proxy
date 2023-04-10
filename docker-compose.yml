@@ -2,7 +2,7 @@
 version: "3.8"
 
 services:
-  deda-ps:
+  deda-fork-server:
     build: .
     user: node:node
     environment:
@@ -10,7 +10,7 @@ services:
       - UID=1000
       - GID=1000
     volumes:
-      - /home/ueiricho/Documents/deda-ps-config:/home/node/config:rw
+      - /home/node/config:/home/node/config:rw
     ports:
       - 8080:8080
       - 4443:4443

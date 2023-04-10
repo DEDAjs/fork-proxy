@@ -1,6 +1,6 @@
 {
     "name": "@deda-proxy-server/proxy-server",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "A fully featured fast and light-weight proxy server with no dependencies fully configured using JSON file (Node replacement for Nginx)",
     "main": "index.js",
     "scripts": {

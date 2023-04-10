@@ -11,8 +11,16 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "args1": ["./docs/www/config.json", "../../dev-ops/proxy.json"],
-            "args": ["-c", "./docs/www/", "-e", "CONFIG_ROOT=/home/ueiricho/Documents/deda-ps-config"],
+            "args1": [
+                "./docs/www/config.json",
+                "../../dev-ops/proxy.json"
+            ],
+            "args": [
+                "-c",
+                "./docs/www/",
+                "-e",
+                "CONFIG_ROOT=/home/ueiricho/Documents/deda-ps-config"
+            ],
             "program": "${workspaceFolder}/main.js"
         },
         {
@@ -22,7 +30,9 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "args": ["--mime"],
+            "args": [
+                "--mime"
+            ],
             "program": "${workspaceFolder}/src/Tools.js"
         },
         {
@@ -31,12 +41,15 @@
             "request": "launch",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "stopOnEntry": false,
-
-            "args": ["${workspaceFolder}/test/All.Test.js", "--no-timeouts"],
-
+            "args": [
+                "${workspaceFolder}/test/All.Test.js",
+                "--no-timeouts"
+            ],
             "cwd": "${workspaceRoot}",
             "runtimeExecutable": null,
-            "env": { "NODE_ENV": "testing"}
+            "env": {
+                "NODE_ENV": "testing"
+            }
         },
         {
             "name": "Run test current file",
@@ -44,12 +57,22 @@
             "request": "launch",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "stopOnEntry": false,
-
-            "args": ["${file}", "--no-timeouts"],
-
+            "args": [
+                "${file}",
+                "--no-timeouts"
+            ],
             "cwd": "${workspaceRoot}",
             "runtimeExecutable": null,
-            "env": { "NODE_ENV": "testing"}
+            "env": {
+                "NODE_ENV": "testing"
+            }
+        },
+        {
+            "name": "Docker Node.js Launch",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-run: debug",
+            "platform": "node"
         }
     ]
 }
