@@ -1,1 +1,281 @@
-Welcome !! 
+<h1 id="deda-proxy-server">DEDA Proxy Server</h1>
+<p>Fully featured Nodejs Proxy-Server with no dependencies (NGINX replacement)</p>
+<p>A fully featured Nodejs, clustered, light-weight, modularized Proxy-Server with no dependencies (Node replacement for Nginx). Fully configured using JSON file(s). Plug-in architecture for easy expandability.</p>
+<h1 id="features-">Features:</h1>
+<ul>
+<li><strong>Cluster</strong> - Supports multi-threading with thread safe logging and shared-memory.</li>
+<li><strong>Logger</strong> - Customizable HTTP access logging with <code>file-rotation</code> support.</li>
+<li><strong>Rate Limiter</strong> - Rate limit requests to mitigate against DOS attaches.</li>
+<li><strong>HTTP(S) Server</strong> - Listen to multiple HTTP and/or HTTPS ports with SSL support that is auto-reload when encryption keys are renewed.</li>
+<li><strong>Proxy</strong> - Proxy requests to upstream servers with <code>load balancing</code> support and <code>web-socket</code> proxy support.</li>
+<li><strong>File Server</strong> - Serve static files (html, js, css, etc) with <code>browser side</code> and server side <code>file caching</code> support.</li>
+<li><strong>Redirect</strong> - Redirect to a different URL using string variables.</li>
+</ul>
+<h1 id="philosophy">Philosophy</h1>
+<p>The idea is to have a very small code base that focuses on performance and security with no dependencies.</p>
+<ul>
+<li>Very small code-base - less code, less bugs, less security holes. This makes it easier for others to read the code and develop components for this project.</li>
+<li>Code comments - Code is written and commented in a way that can be red like reading a story that describes the process.</li>
+<li>Code namings - Variable and method names describe their full intension. No abbreviations, or &#39;i&#39; or &#39;k&#39; or &#39;foo&#39; or &#39;bar&#39; etc. </li>
+<li>Code is written for others and your future self - Others must be able to easily read the code. You should be able to easily understand the code 10 years from now.</li>
+<li>No Dependencies - the simple reason is to keep security vulnerability low.</li>
+<li>Pure Javascript ES6 - No transcoding, transforming, transporting, transposing, etc. Pure code.</li>
+<li>Full Test Suite - At least this is the goal (on going testing).</li>
+<li>Full document documentation - In code auto generated code documentation.</li>
+</ul>
+<h1 id="architecture">Architecture</h1>
+<p>For an in-depth description of the architecture see <a href="./docs/Architecture.md">Architecture.md</a>.</p>
+<h2 id="component-drive-application">Component Drive Application</h2>
+<p>This application uses a very simple yet extremely customizable flat componentization architecture that uses JSON to build and load the application accordingly to the user needs/requirements.</p>
+<p>The application implements many different components to fullfil different task and it is up to the user to put them together according to their needs/requirements. This makes it easier for developers to extend the functionality of the application and write new components.</p>
+<h2 id="clustering-and-ipc">Clustering and IPC</h2>
+<p>The main application class is the cluster/worker manager. This class spawns new threads and provides a mechanism for child processes to communicate between each other using Node IPC (Inter-Process Communication).</p>
+<p>The user has full control over number of threads and components using the JSON configuration. Shared components such as SharedMemory and ShardStream can be used across threads using IPC. </p>
+<p>Technically speaking a component within a thread can invoke any method of another component within a different thread, pass it parameters and getting the returned results seamlessly using the app cluster manager.</p>
+<h1 id="configuration">Configuration</h1>
+<p>The DEDA Proxy Server is configured using JSON within a single file or split into multiple files based on your configuration logical modals.</p>
+<p>For a full example config file see <a href="./docs/ConfigExample.md">ConfigExample.md</a>.</p>
+<p>For a Simple example configuration file see <a href="./docs/ConfigExmapleSimple.md">ConfigExampleSimple.md</a>.</p>
+<p>The application takes in a folder that contains all the configuration files and folders. The root folder contains
+the <code>config.json</code> file the contains the initial application configurations. <code>config.json</code> can then point to other
+files as your specific structure or config require. If No configuration are found within the given folder or
+if the folder does not exist then the default folder structure is created and a default config is used.</p>
+<ul>
+<li>Root Folder<ul>
+<li>html : contains the www root files.</li>
+<li>logs : contains log files</li>
+<li>ssl  : contains the certificate files</li>
+<li>config.json - The main config files.</li>
+</ul>
+</li>
+</ul>
+<p>Any included configurations can be placed in the root folder. Off course this can be completely changes based on the <code>config.json</code> file.</p>
+<h2 id="general-properties">General Properties</h2>
+<p>These properties can be used within all components.</p>
+<ul>
+<li><code>id</code>: The unique ID of the component. Used to reference this component. <em>Optional</em></li>
+<li><code>desc</code>: A user description of this settings. <em>Optional</em></li>
+<li><code>namespace</code>: The component namespace to create. This is a required field that identifies which component to create. <em>Required</em></li>
+</ul>
+<h1 id="cluster">Cluster</h1>
+<ul>
+<li><code>enable</code>: Enables or disable cluster support. <em>Default false</em></li>
+<li><code>numberOfWorkers</code>: Number of works to create when enabled. *Default is # of CPUs</li>
+<li><code>restartDelay</code>: Number of milliseconds to wait before restarting a crashed worker. <em>Default 500</em></li>
+<li><code>enableUncaughtException</code>: Enables global uncaught exception. <em>Default true</em></li>
+<li><code>workers[]</code>: A detailed definition of workers to create. If not specified uses <code>numberOfWorkers</code> with the <code>app</code> configuration.<ul>
+<li><code>name</code>: The name of the configuration to use for this worker.</li>
+<li><code>count</code>: The number of threads to create for this configuration.</li>
+</ul>
+</li>
+<li><code>components[]</code>: The list of component to load within the Primary process.</li>
+</ul>
+<p>The following is a list of implemented components that can be used within the <code>components[]</code> of the <code>Cluster</code> or <code>App</code> configuration.</p>
+<h1 id="servers">Servers</h1>
+<p>A server component is a component that listens to incoming requests from clients and pass them to matched handlers.Currently one HTTP server component is implemented. Future components can include TCP, UDP and SMTP servers.</p>
+<h2 id="server-http">Server.HTTP</h2>
+<ul>
+<li><code>&quot;namespace&quot;</code>: &quot;Server.HTTP&quot;</li>
+<li><code>port</code>: The server port. <em>Required</em></li>
+<li><code>host</code>: The IP address to bind the server to. <em>Default 127.0.0.1</em>.</li>
+<li><code>encrypted</code>: Defines if the HTTP server is encrypted. <em>Default false</em>.</li>
+<li><code>key</code>: The private key file path if <code>encrypted</code> is true.</li>
+<li><code>cert</code>: The certificate file path if <code>encrypted</code> is true.</li>
+<li><code>watch</code>: Indicates whether to reload the server if the <code>key</code> file has changed. <em>Default true</em>.</li>
+<li><code>watchRestartDelay</code>: Defines the number of milliseconds to wait before reloading keys. <em>Default 10000</em></li>
+</ul>
+<h1 id="route">Route</h1>
+<p>Routes are similar to ExpressJs route that uses the incoming request URL and method to match and redirect requests to different handlers. There are 3 different components that can handle HTTP requests. <code>Redirect</code>, <code>FileServe</code>, and <code>HttpProxy</code>. </p>
+<p>All routes can use the <code>Component</code> properties and the following:</p>
+<ul>
+<li><code>logger{}</code>: Create a new logger component. Only one logger per route. See <a href="#Logger">Logger</a>.</li>
+<li><code>loggerId</code>: The ID of a logger to use. Ignored if <code>logger{}</code> is defined. <em>Default null</em></li>
+<li><code>rateLimit{}</code>: Create a new rate-limit component to be used by this route. Only one rate-limiter per route. See <a href="#RateLimit">RateLimit</a>.</li>
+<li><code>rateLimitId</code>: The ID of a rate-limiter to use. Ignored if <code>rateLimit{}</code> is defined. <em>Default null</em></li>
+<li><code>match{}</code>: The list of properties to match with the request URL. See <a href="#match">match</a>.</li>
+</ul>
+<h2 id="proxy-redirect">Proxy.Redirect</h2>
+<p>This component redirects matched requests to the set URL.</p>
+<ul>
+<li><code>&quot;namespace&quot;</code>: &quot;Proxy.Redirect&quot;</li>
+<li><code>url</code>: The url to redirect to. Supports context references. <em>Required</em></li>
+<li><code>statusCode</code>: The status code to use. <em>Default 307</em>.</li>
+<li><code>statusMessage</code>: The status message to return. If null then auto-populated based on the <code>statusCode</code>. <em>Default null</em>.</li>
+<li><code>body</code>: The body message to send. <em>Default &quot;<code>${statusMessage}. Redirecting to ${url}</code>&quot;</em></li>
+</ul>
+<h2 id="proxy-fileserve">Proxy.FileServe</h2>
+<p>This component can serve static files based on the request URL.</p>
+<ul>
+<li><code>&quot;namespace&quot;</code>: &quot;Proxy.FileServe&quot;</li>
+<li><code>root</code>: Serve files relative to path. Supports context references. <em>Required</em></li>
+<li><code>dotfiles</code>: Specifies whether dot files are allowed <code>allow</code>, <code>deny</code>, <code>ignore</code>. Default <code>ignore</code>.</li>
+<li><code>statusCode</code>:  The status code to use when serving this content. <em>Default 200</em>.</li>
+<li><code>lastModified</code>:  Enable/disable Last-Modified header. <em>Default true</em>.</li>
+<li><code>index</code>: specify index file to use for example &#39;index.html&#39;, false to disable. <em>Default false</em>.</li>
+<li><code>cacheControl</code>: Enables or disabled client side caching. <em>Default true</em>.</li>
+<li><code>immutable</code>: Enables HTTP header immutable feature on <code>Cache-Control</code>. <em>Default true</em>.</li>
+<li><code>maxAge</code>: Specifies the max age of <code>Cache-Control</code>. <em>Default 3600000 in ms</em></li>
+<li><code>eTag</code>: Enable or disable header ETAG. <em>Default true</em></li>
+</ul>
+<h2 id="proxy-http">Proxy.HTTP</h2>
+<ul>
+<li><code>&quot;namespace&quot;</code>: &quot;Proxy.HTTP&quot;</li>
+<li><code>balanderId</code>: Selects a load-balancing method; <code>round-robin</code>, <code>least-conn</code>, <code>least-time</code>, <code>random</code>. Only <code>round-robin</code> is implemented in the current version.</li>
+<li><code>sticky</code>: Enables session persistence of client connections to the save backend server <strong>[NOT IMPLEMENTED YET]</strong>.</li>
+<li><code>upstream</code>: A single or list of server to proxy/load-balance to.<ul>
+<li><code>server</code>: The url to redirect to. Supports context references.</li>
+<li><code>down</code>: Is a boolean that indicates that the server is down and will not be used.</li>
+<li><code>backup</code>: Used as a backup server when the other servers are down <strong>[NOT IMPLEMENTED YET]</strong>.</li>
+</ul>
+</li>
+</ul>
+<h2 id="ratelimits">RateLimits</h2>
+<ul>
+<li><code>windowMs</code>: The time window to limit the requests to. Default 60000ms or 1 minute.</li>
+<li><code>max</code>: The maximum number of hits/requests within the time window. Default 100.</li>
+<li><code>statusCode</code>: The status code to use when max limit is reached. Default 429.</li>
+<li><code>statusMessage</code>: The status message to use when max limit is reached. Default: <code>Too many requests, please try again later.</code></li>
+<li><code>setHeader</code>: Indicates whether to send the <code>RateLimit-xxx</code> status headers. Default true.</li>
+</ul>
+<h2 id="log">Log</h2>
+<ul>
+<li><code>format</code>: The output format. See below for more details. Supports context references.</li>
+</ul>
+<p>Logger format can include anything within the request context `{url, request, response, token, route, process, package}.</p>
+<p>Assiged from the default/system properties within the above object there is a list of DEDA-Proxy-Server specific properties:</p>
+<ul>
+<li><code>request._startTime</code></li>
+<li><code>response._responseTime</code></li>
+</ul>
+<p>Request and response headers can be access as well. Here is an example:</p>
+<ul>
+<li><code>request.headers.x-forwarded-for</code></li>
+<li><code>response.headers.content-length</code></li>
+</ul>
+<h2 id="rotating-file-stream">Rotating File Stream</h2>
+<ul>
+<li><code>path</code>: The log path where the file will be written to.</li>
+<li><code>size</code>: The maximum size of a log file before generating a new log. B-bites, K-KiloBites, M-MegaBytes, G-GigaBytes.</li>
+<li><code>interval</code>: The max time before generating a new log. s-seconds, m-minutes, h-hours, d-days.</li>
+<li><code>maxSize</code>: Specifies the maximum size of rotated files to keep. <strong>Default:</strong> <code>null</code></li>
+</ul>
+<h2 id="route">Route</h2>
+<p>This is the base class for all the routes that handle incoming requests. These are the 
+common properties that can be assigned to all routes.</p>
+<ul>
+<li><code>id</code>: A unique ID for this route. Used for debugging and references.</li>
+<li><code>desc</code>: A user description of the route. This is simply meta-data and not used.</li>
+<li><code>log</code>: The logger ID to use to log all requests. See above <a href="Logger">#logger</a></li>
+<li><code>rateLimit</code>: The rate-limiter ID to use for this route. See above <a href="RateLimiter">#RateLimiter</a></li>
+<li><code>match</code>: An object used for matching request URL. See <a href="Match">#Match</a> for more details.</li>
+</ul>
+<hr>
+<h1 id="sample-url-structure">Sample URL structure</h1>
+<pre><code class="lang-json">{
+    <span class="hljs-attr">"protocol"</span>: <span class="hljs-string">"https:"</span>,
+    <span class="hljs-attr">"slashes"</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">"auth"</span>: <span class="hljs-literal">null</span>,
+    <span class="hljs-attr">"host"</span>: <span class="hljs-string">"dev02.deda.ca:4443"</span>,
+    <span class="hljs-attr">"port"</span>: <span class="hljs-string">"4443"</span>,
+    <span class="hljs-attr">"hostname"</span>: <span class="hljs-string">"dev02.deda.ca"</span>,
+    <span class="hljs-attr">"hash"</span>: <span class="hljs-literal">null</span>,
+    <span class="hljs-attr">"search"</span>: <span class="hljs-literal">null</span>,
+    <span class="hljs-attr">"query"</span>: <span class="hljs-literal">null</span>,
+    <span class="hljs-attr">"pathname"</span>: <span class="hljs-string">"/api/app/"</span>,
+    <span class="hljs-attr">"path"</span>: <span class="hljs-string">"/api/app/"</span>,
+    <span class="hljs-attr">"href"</span>: <span class="hljs-string">"https://dev02.deda.ca:4443/api/app/"</span>,
+    <span class="hljs-attr">"method"</span>: <span class="hljs-string">"GET"</span>
+}
+</code></pre>
+<h1 id="other-projects">Other Projects</h1>
+<p>I&#39;ve linked a reference to the npm packages that was used as inspiration for this project.</p>
+<p>TODO: import files.</p>
+<p>Example Config:</p>
+<pre><code class="lang-JSON">{
+    <span class="hljs-comment">// The configs supports variables for example ${env.hostname}</span>
+    <span class="hljs-string">"env"</span>: {
+        <span class="hljs-string">"hostname"</span>: <span class="hljs-string">"mydomain.com"</span>
+    },
+
+    <span class="hljs-comment">// Cluster definition.</span>
+    <span class="hljs-string">"cluster"</span>: {
+        <span class="hljs-string">"enabled"</span>: <span class="hljs-keyword">true</span>,
+        <span class="hljs-string">"numberOfWorkers"</span>: <span class="hljs-number">4</span>
+    },
+
+    <span class="hljs-comment">// Application component definitions</span>
+    <span class="hljs-string">"app"</span>: {
+
+        <span class="hljs-string">"enableUncaughtException"</span>: <span class="hljs-keyword">true</span>,
+
+        <span class="hljs-string">"components"</span>: [
+
+            <span class="hljs-comment">// Create an HTTP server listening on port 8080</span>
+            {
+                <span class="hljs-string">"namespace"</span>: <span class="hljs-string">"Server.HTTP"</span>,
+                <span class="hljs-string">"port"</span>: <span class="hljs-number">8080</span>,
+                <span class="hljs-string">"host"</span>: <span class="hljs-string">"0.0.0.0"</span>
+            },
+
+            <span class="hljs-comment">// Create an HTTPS server listening on port 4443</span>
+            {
+                <span class="hljs-string">"namespace"</span>: <span class="hljs-string">"Server.HTTP"</span>,
+                <span class="hljs-string">"port"</span>: <span class="hljs-number">4443</span>,
+                <span class="hljs-string">"host"</span>: <span class="hljs-string">"0.0.0.0"</span>,
+                <span class="hljs-string">"key"</span> : <span class="hljs-string">"<span class="hljs-subst">${env.cwd}</span>/docs/www/ssl/private.key"</span>,
+                <span class="hljs-string">"cert"</span>: <span class="hljs-string">"<span class="hljs-subst">${env.cwd}</span>/docs/www/ssl/cert.crt"</span>,
+                <span class="hljs-string">"encrypted"</span>: <span class="hljs-keyword">true</span>,
+                <span class="hljs-string">"watch"</span>: <span class="hljs-keyword">true</span>
+            },
+
+            <span class="hljs-comment">// Create a rate limiter</span>
+            {
+                <span class="hljs-string">"id"</span>: <span class="hljs-string">"API.RateLimiter"</span>,
+                <span class="hljs-string">"namespace"</span>: <span class="hljs-string">"RateLimit"</span>,
+
+                <span class="hljs-string">"max"</span>: <span class="hljs-number">10</span>,
+                <span class="hljs-string">"windowMs"</span>: <span class="hljs-number">10000</span>,
+                <span class="hljs-string">"standardHeaders"</span>: <span class="hljs-keyword">false</span>,
+
+                <span class="hljs-string">"store"</span>: {
+                    <span class="hljs-string">"namespace"</span>: <span class="hljs-string">"Store.Memory"</span>
+                }
+            },
+
+            <span class="hljs-comment">// Create a Proxy redirect component to redirect HTTP to HTTPS</span>
+            {   
+                <span class="hljs-string">"namespace"</span>: <span class="hljs-string">"Proxy.Redirect"</span>,
+                <span class="hljs-string">"match"</span>: { <span class="hljs-string">"protocol"</span>: <span class="hljs-string">"http:"</span> },
+
+                <span class="hljs-string">"url"</span>: <span class="hljs-string">"https://<span class="hljs-subst">${url.hostname}</span>:4443<span class="hljs-subst">${url.pathname}</span><span class="hljs-subst">${url.search}</span>"</span>,
+                <span class="hljs-string">"statusCode"</span>: <span class="hljs-number">307</span>
+            },
+            <span class="hljs-comment">// Create an HTTP Proxy to the Express API servers.</span>
+            {
+                <span class="hljs-string">"namespace"</span>: <span class="hljs-string">"Proxy.HTTP"</span>,
+                <span class="hljs-string">"desc"</span>: <span class="hljs-string">"Proxy to upstream API servers"</span>,
+
+                <span class="hljs-string">"match"</span>: { <span class="hljs-string">"pathname"</span>: <span class="hljs-string">"//^/api/"</span>},
+                <span class="hljs-string">"headers"</span>: { <span class="hljs-string">"x-forwarded-for"</span>: <span class="hljs-string">"<span class="hljs-subst">${request.socket.remoteAddress}</span>"</span> },
+
+                <span class="hljs-string">"rateLimitId"</span>: <span class="hljs-string">"API.RateLimiter"</span>,
+                <span class="hljs-string">"balancer"</span>: {
+                    <span class="hljs-string">"namespace"</span>: <span class="hljs-string">"Balancer.RoundRobin"</span>
+                },
+                <span class="hljs-string">"upstream"</span>: [
+                    {<span class="hljs-string">"server"</span>: <span class="hljs-string">"https://192.168.0.200/"</span>},
+                    {<span class="hljs-string">"server"</span>: <span class="hljs-string">"https://192.168.0.201/"</span>},
+                    {<span class="hljs-string">"server"</span>: <span class="hljs-string">"https://192.168.0.202/"</span>, <span class="hljs-string">"down"</span>: <span class="hljs-keyword">true</span>}
+                ]
+            },
+            <span class="hljs-comment">// Create a File Server component to serve app static files.</span>
+            {
+                <span class="hljs-string">"namespace"</span>: <span class="hljs-string">"Proxy.FileServe"</span>,
+                <span class="hljs-string">"desc"</span>: <span class="hljs-string">"The main Website"</span>,
+
+                <span class="hljs-string">"root"</span>: <span class="hljs-string">"<span class="hljs-subst">${env.cwd}</span>/www/html/"</span>
+            }
+        ]
+    }
+}
+</code></pre>
