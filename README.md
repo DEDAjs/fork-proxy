@@ -17,13 +17,13 @@ A fully featured Nodejs, clustered, light-weight, modularized Proxy-Server with 
 
 # Philosophy
 
-The idea is to have a very small code base that focuses on performance and security.
+The idea is to have a very small code base that focuses on performance and security with no dependencies.
 
 * Very small code-base - less code, less bugs, less security holes. This makes it easier for others to read the code and develop components for this project.
 * Code comments - Code is written and commented in a way that can be red like reading a story that describes the process.
 * Code namings - Variable and method names describe their full intension. No abbreviations, or 'i' or 'k' or 'foo' or 'bar' etc. 
 * Code is written for others and your future self - Others must be able to easily read the code. You should be able to easily understand the code 10 years from now.
-* No Dependencies - the simple reason is to keeps security vanroblilities low.
+* No Dependencies - the simple reason is to keep security vulnerability low.
 * Pure Javascript ES6 - No transcoding, transforming, transporting, transposing, etc. Pure code.
 * Full Test Suite - At least this is the goal (on going testing).
 * Full document documentation - In code auto generated code documentation.
@@ -151,16 +151,6 @@ This component can serve static files based on the request URL.
     * `server`: The url to redirect to. Supports context references.
     * `down`: Is a boolean that indicates that the server is down and will not be used.
     * `backup`: Used as a backup server when the other servers are down **[NOT IMPLEMENTED YET]**.
-
-
-
-
-
-
-
-
-
-
 
 ## RateLimits
 
