@@ -10,7 +10,7 @@ module.exports = {
         // Creates and HTTP server that listen onto port 80
         {
             namespace: "Server.HTTP",
-            port: 8080,
+            port: 80,
             host: "0.0.0.0"
         },
         {

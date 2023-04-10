@@ -419,37 +419,61 @@ class Utility
         response.end(body);
     }
 
-    static copyDefaultConfig(configRoot, defaultRoot = "../docs/www")
+    /**
+     * Copies the content of the source path to the destination path. If the destination path 
+     * does not exist it is created.
+     * 
+     * @param {string} srcPath - The source path.
+     * @param {string} destPath - The destination path.
+     * @returns {boolean} - Returns true if successful otherwise false.
+     */
+    static copyDirectory(srcPath, destPath)
     {
-        try {
-            console.log(`Copying default configuration to: ${configRoot}`);
+        // Make sure the root directory exists.
+        fs.mkdirSync(destPath, {recursive:true});
+        // Copy over to the directory the default config to use.
+        fs.cpSync(srcPath, destPath, {recursive: true, force: false});
+    }
 
-            // Get the root path of the default config directory.
-            defaultRoot = path.resolve(__dirname, defaultRoot);
+    /**
+     * Checks if the given directory path is empty or contains files/folders.
+     * 
+     * @param {string} dirPath - The path to the directory.
+     * @returns {boolean} - True if directory is empty otherwise false.
+     */
+    static isDirectoryEmpty(dirPath)
+    {
+        const files = fs.readdirSync(path);
+        return (files || files.length === 0);
+    }
 
-            // Make sure the root directory exists.
-            fs.mkdirSync(configRoot, {recursive:true});
-            // Copy over to the directory the default config to use.
-            fs.cpSync(defaultRoot, configRoot, {recursive: true});
-        } catch (error) {
-            console.error("Error: unable to create config directory", error);
-            return false;
-        }
-
-        return true;
+    /**
+     * Checks if the given path is a directory.
+     * 
+     * @param {string} dirPath - The path to the directory.
+     * @returns {boolean} - True if path is a directory otherwise false.
+     */
+    static isDirectory(dirPath)
+    {
+        return fs.statSync(dirPath).isDirectory();
     }
 
     /**
      * Initializes the working directory at the given path. If the config file already Exists then returns
-     * it otherwise creates a default one and returns it.  This is used when running in a docker container 
-     * where no files are provided upon initialization.
+     * it otherwise creates a default one and returns it. If the directory is empty then the default www folder
+     * is copied to the directory.
+     * 
+     * This is used when running in a docker container where no files are provided upon initialization.
      * 
      * @param {string} configRoot - the path to a config directory.
      * @param {object} - Returns the loaded or created config file
      */
     static loadConfig(configRoot = null, defaultRoot = "../docs/www")
     {
-        let config, configPath;
+        // Contains the loaded JSON configuration as an object;
+        let config
+        // The full path of the configuration file `${configRoot}/config.json`
+        let configPath;
 
         // Process the command line arguments.
         const args = this.readCLIArgs(process.argv);
@@ -464,19 +488,34 @@ class Utility
         // If still no config root then return error.
         if (!configRoot) return console.error("Error: Missing config file path command line parameter.\r\nExample: node main.js -c ./data/");
 
-        // If the path does not exist then try to create it.
+        // Build the paths for the root and config.
         configRoot = path.resolve(configRoot);
-        if (!fs.existsSync(configRoot) && !this.copyDefaultConfig(configRoot, defaultRoot)) return;
+        configPath = path.join(configRoot, "config.js");
 
-        // If the path is a file then load it.
-        const rootState = fs.statSync(configRoot);
-        if (!rootState.isDirectory()) return console.error("Error: root config must be a directory.");
+        // Check if they exist.
+        const rootExists = fs.existsSync(configRoot);
+        const configExists = fs.existsSync(configPath);
+
+        // If the root directory does not exist or the config file does not exist then copy over the default folder structure.
+        if (!rootExists || !configExists)
+        {
+            // If the root exists then make sure it is a directory.
+            if (rootExists && !this.isDirectory(configRoot)) return console.error(`Error: root config must be a directory: ${configRoot}`);
+
+            // Resolve the default root directory before copying.
+            defaultRoot = path.resolve(__dirname, defaultRoot);
+
+            console.log(`Copying default configuration to: ${configRoot}`);
+
+            // Copy over the directory. If there is an error then we are done.
+            try {
+                this.copyDirectory(defaultRoot, configRoot);
+            } catch (error) {
+                return console.error("Error: unable to create or copy default configs to root directory", error);
+            }
+        }
 
         try {
-            // Load the file
-            configPath = path.join(configRoot, "config.js");
-            // If the file does not exist then create it.
-            if (!fs.existsSync(configPath) && !this.copyDefaultConfig(configRoot, defaultRoot)) return;
 
             console.log(`Loading configuration from: ${configPath}`);
 
