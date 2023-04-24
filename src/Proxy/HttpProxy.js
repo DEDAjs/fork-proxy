@@ -41,7 +41,9 @@ class HttpProxy extends Route
     {
         return Object.assign(super.getDefaultConfigs(), {
             sticky: false,  // NOT IMPLEMENTED YET!
-            server: null    // string,
+            server: null,   // string,
+
+            upgrade: false  // Allows web-socket upgrade.
 
             // TODO: Add headers
         });
@@ -109,8 +111,12 @@ class HttpProxy extends Route
         };
 
         try {
-            // @todo only upgrade if options specifies that it is supported
-            if (context.upgrade) this.socketProxy(context, options, upstream);
+            // Only upgrade if options specifies that it is supported
+            if (context.upgrade)
+            {
+                if (this.config.upgrade) this.socketProxy(context, options, upstream);
+                else { response.statusCode = 406; response.end(); }
+            }
             else this.httpProxy(context, options, upstream);
         } catch (error) {
             console.log(`Error connecting to target: `, error);
@@ -118,6 +124,12 @@ class HttpProxy extends Route
 
     }
 
+    /**
+     * 
+     * @param {*} context 
+     * @param {*} options 
+     * @param {*} upstream 
+     */
     httpProxy(context, options, upstream)
     {
         let {request, response} = context;
@@ -149,6 +161,12 @@ class HttpProxy extends Route
         request.pipe(upstreamRequest, {end: true});
     }
 
+    /**
+     * 
+     * @param {*} context 
+     * @param {*} options 
+     * @param {*} upstream 
+     */
     socketProxy(context, options, upstream)
     {
         // Based on the protocol then get the https or http.
