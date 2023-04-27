@@ -12,10 +12,12 @@ module.exports = {
 
     // API : require("./src/API.js")    // Future implementation
 
+    CertManager : require("./src/ACME/Manager.js"),
+
     Logger: {
         Logger: require("./src/Logger/Logger.js")
     },
-    
+     
     RateLimiter: {
         RateLimit: require("./src/RateLimiter/RateLimit.js")
     },

@@ -20,6 +20,12 @@ module.exports = {
             index: "index.html",
 
             root: "${env.CONFIG_ROOT}/html/"
+        },
+        {
+            namespace: "Server.ACME",
+            domains: {
+                "deda.ca": { rootPath: "${env.CONFIG_ROOT}/html/" }
+            }
         }
     ]
 }

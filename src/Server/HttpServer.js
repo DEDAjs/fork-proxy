@@ -187,8 +187,12 @@ class HttpServer extends Component
         // Parse the URL.
         const url = Utility.parseUrl(request);
 
+console.log(`REQUEST: ${(request.socket.encrypted ? "https" : "http") + '://' + request.headers.host + request.url}`);
+
         // Traverses the list of routes to find a match for the URL.
         const {route, match} = this.findMatch(url);
+
+console.log(`MATCHED: ${JSON.stringify(route?.config?.match)}`)
 
         // If no match found then do nothing.
         if (!route) return response.end();
